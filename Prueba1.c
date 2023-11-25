@@ -1,8 +1,23 @@
-# CajeroATM
-#include<stdio.h>
+//CajeroATM
+// LIBRERIAS
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
 
 
 
+//ESTRUCTURA DE USUARIOS
+struct Usuario {
+  char nombre[50];
+  char contrasena[20];
+  float saldo;
+  char iban[30];
+};
+
+
+
+//MAIN
 int main() {
   
   return 0;
@@ -10,7 +25,10 @@ int main() {
 
 
 
-void usuario(){
+//MODULOS
+
+//MODULO QUE PREGUNTA AL USUARIO SI TIENE UNA CUENTA O NO
+void usuarioSoN(){
   int usu;
   
   printf("Bienvenido al menu\n");
@@ -21,6 +39,8 @@ void usuario(){
 }
 
 
+
+//EN CASO DE QUE TENGA CUENTA, SE LE MUESTRA ESTE MENU AL USUARIO
 void ususi(){
   int usu;
   
@@ -34,6 +54,7 @@ void ususi(){
 
 
 
+//MODULO PARA INGRESOS DE DINERO
 void ingr(){
   int din, conf;
   
@@ -64,7 +85,7 @@ void ingr(){
 
 
 
-
+//MODULO PARA RETIRO DE DINERO
 void retiro(){
   int dinre, confre;
   
@@ -93,3 +114,16 @@ void retiro(){
   }
 }
 
+
+
+// MODULO PARA GENERAR EL IBAN
+void generarIban(char *iban) {
+
+    strcpy(iban, "ES");
+
+    for (int i = 2; i < 18; ++i) {
+        iban[i] = '0' + rand() % 10;
+    }
+    
+    iban[18] = '\0';
+}
