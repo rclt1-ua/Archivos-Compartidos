@@ -8,7 +8,9 @@
 
 //DEFINICIONES CONSTANTES
 #define NOMBRE 50
+
 #define PIN 4
+
 #define IBAN 25
 
 
