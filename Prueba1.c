@@ -14,16 +14,6 @@
 #define IBAN 25
 
 
-//MODULOS
-void usuarioSoN();
-void ususi();
-void ingr();
-void retiro();
-void crearUsuario(struct Usuario *usuario);
-void generarIban(char *iban);
-void generarPin(char *pin);
-
-
 
 //ESTRUCTURA DE USUARIOS
 struct Usuario {
