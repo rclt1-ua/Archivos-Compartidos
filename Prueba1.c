@@ -15,7 +15,7 @@
 
 
 //ESTRUCTURA PARA USUARIOS
-typdef struct Usuario {
+typedef struct Usuario {
   char nombre[NOMBRE];
   char apellido[APELLIDO];
   char pin[PIN];
@@ -36,37 +36,38 @@ int main() {
 
 //MODULOS
 //MODULO QUE PREGUNTA AL USUARIO SI TIENE UNA CUENTA O NO
-void usuarioSoN(*ususn){
-  int ususn;
+void usuarioSoN(int *ususn){
+  int ususna;
   printf("Bienvenido al menu\n");
   printf("1. Tengo una cuenta\n"); 
   printf("2. Crear Usuario\n"); 
-  scanf("%d", &usu);
-  *ususn = ususn;
+  scanf("%d", &ususna);
+  *ususn = ususna;
 }
 
 
 /////MODULOS DE USUARIO SI
 //EN CASO DE QUE TENGA CUENTA, SE LE MUESTRA ESTE MENU AL USUARIO
-void ususi(*usu){
-  int usu;
+void ususi(int *usu){
+  int usua;
   printf("Seleccione su operacion\n");
   printf("1. Ingresas dinero\n"); 
   printf("2. Retirar dinero\n"); 
   printf("3. Estado de cuenta\n"); 
   printf("4. Transferencia dinero\n");
-  scanf("%d", &usu);
-  *usu = usu;
+  scanf("%d", &usua);
+  *usu = usua;
 }
 
 
 
 //MODULO PARA INGRESOS DE DINERO
 void ingr(){
-  int din, conf;
+  int din;
+  char conf;
   printf("Introduzca la cantidad de dinero que desea ingresar\n");
   scanf("%d", &din);
-    if( din % 10 == 0){
+    if( din % 10 == 0 && din > 0){
       printf("Confirme su operacion s/n\n");
       scanf("%c", &conf);
         if(conf == 's'){
@@ -79,7 +80,7 @@ void ingr(){
         }       
     }
     else {
-      printf("La cantidad introducida debe ser un multiplo de 10\n");
+      printf("La cantidad introducida debe ser un multiplo de 10 y mayor que 0\n");
       printf("Operacion fallida\n");
       printf("Gracias por utilizar nuestro servicio\n");
     }
@@ -89,10 +90,11 @@ void ingr(){
 
 //MODULO PARA RETIRO DE DINERO
 void retiro(){
-  int dinre, confre;
+  int dinre; 
+  char confre;
   printf("Introduzca la cantidad de dinero que desea retirar\n");
   scanf("%d", &dinre);
-    if( dinre % 10 == 0){
+    if( dinre % 10 == 0 && dinre > 0){
       printf("Confirme su operacion s/n\n");
       scanf("%c", &confre);
         if(confre == 's'){
@@ -105,7 +107,7 @@ void retiro(){
         }
     }
     else {
-      printf("La cantidad introducida debe ser un multiplo de 10\n");
+      printf("La cantidad introducida debe ser un multiplo de 10 y mayor que 0\n");
       printf("Operacion fallida\n");
       printf("Gracias por utilizar nuestro servicio\n");
     }
@@ -125,7 +127,7 @@ void pedirNombre(char *nombre){
   scanf("%s", nombre);
 }
 
-void pedirNombre(char *apellido){
+void pedirApellido(char *apellido){
   printf("Introduzca su apellido");
   scanf("%s", apellido);
 }
