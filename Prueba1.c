@@ -7,10 +7,9 @@
 
 
 //DEFINICIONES CONSTANTES
-#define NOMBRE 50
-
+#define NOMBRE 15
+#define APELLIDO 15
 #define PIN 4
-
 #define IBAN 25
 
 
@@ -18,6 +17,7 @@
 //ESTRUCTURA DE USUARIOS
 struct Usuario {
   char nombre[NOMBRE];
+  char apellido[APELLIDO];
   char pin[PIN];
   float saldo;
   char iban[IBAN];
@@ -115,13 +115,19 @@ void retiro(){
 
 
 
-
-
-
 /////MODULOS USUARIO NO
 void crearUsuario(struct Usuario *usuario){
   
-  
+}
+
+void pedirNombre(char *nombre){
+  printf("Introduzca su nombre");
+  scanf("%s", nombre);
+}
+
+void pedirNombre(char *apellido){
+  printf("Introduzca su apellido");
+  scanf("%s", apellido);
 }
 
 
