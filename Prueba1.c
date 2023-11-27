@@ -14,14 +14,14 @@
 
 
 
-//ESTRUCTURA DE USUARIOS
-struct Usuario {
+//ESTRUCTURA PARA USUARIOS
+typdef struct Usuario {
   char nombre[NOMBRE];
   char apellido[APELLIDO];
   char pin[PIN];
   float saldo;
   char iban[IBAN];
-} usuario;
+} TUsuario;
 
 
 
