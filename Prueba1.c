@@ -7,28 +7,45 @@
 
 
 //DEFINICIONES CONSTANTES
+#define NOMUS 8
 #define NOMBRE 15
 #define APELLIDO 15
 #define PIN 4
 #define IBAN 25
-
+#define USUARIO 50
 
 
 //ESTRUCTURA PARA USUARIOS
-typedef struct Usuario {
+typedef struct {
+  char nomUs[NOMUS];
   char nombre[NOMBRE];
   char apellido[APELLIDO];
   char pin[PIN];
   float saldo;
-  char iban[IBAN];
+  string iban[IBAN];
 } TUsuario;
 
+typedef TUsuario TListaUsuarios [USUARIO];
+TListaUsuarios listaU;
 
 
 //MAIN
 int main() {
-  struct Usuario usuario;
-  
+  TUsuario usuario;
+  int a, conUs;
+  usuarioSoN(a);
+
+  if(a == 1){
+
+
+
+
+
+    
+  } else if (a == 2){
+   usuario = crearUsuario();
+    contUs=contUs+1;
+  }
   return 0;
 }
 
@@ -63,7 +80,7 @@ void ususi(int *usu){
 
 //MODULO PARA INGRESOS DE DINERO
 void ingr(){
-  int din;
+  float din;
   char conf;
   printf("Introduzca la cantidad de dinero que desea ingresar\n");
   scanf("%d", &din);
@@ -116,28 +133,49 @@ void retiro(){
 
 
 
-
 /////MODULOS USUARIO NO
-void crearUsuario(struct Usuario *usuario){
+int crearUsuario(){
+ TUsuario usuario;
+  float saldo;
+  saldo = 0;
+  pedirNombre(usuario.nombre);
+  pedirApellido(usuario.apellido);
+  //generarNomus();
+  generarPin(usuario.pin);  
+  generarIban(usuario.iban);
+  usuario.saldo = saldo;
+  return usuario;
+}
+
+void generarNomus(TUsuario *usuario){
+  TUsuario.nombre
+  TUsuario.apellido
+  
   
 }
 
-void pedirNombre(char *nombre){
+void pedirNombre(char nombre[]){
   printf("Introduzca su nombre");
   scanf("%s", nombre);
 }
 
-void pedirApellido(char *apellido){
+void pedirApellido(char apellido[]){
   printf("Introduzca su apellido");
   scanf("%s", apellido);
 }
 
+void generarPin(char pin[]) {
+  int i;
+  srand( time( NULL ) );
+    for (i = 0; i < 4; i++) {
+      pin[i] = '0' + rand() % 10;
+    } pin[4] = '\0';
+}
 
-// MODULO PARA GENERAR EL IBAN
-void generarIban(char *iban) {
+void generarIban(string *iban) {
   int i;
   srand( time ( NULL ) );
-  strcpy(iban, "ES00");
+  strcpy(iban, "ES");
     for (i = 4; i < 24; ++i) {
         iban[i] = '0' + rand() % 10;
     }  
@@ -146,11 +184,4 @@ void generarIban(char *iban) {
 
 
 
-void generarPin(char *pin) {
-  int i;
-  srand( time( NULL ) );
-    for (i = 0; i < 4; i++) {
-      pin[i] = '0' + rand() % 10;
-    }
-      pin[4] = '\0';
-}
+
