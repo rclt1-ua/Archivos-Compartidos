@@ -26,18 +26,21 @@ typedef struct {
 } TUsuario;
 
 typedef TUsuario TListaUsuarios [USUARIO];
-TListaUsuarios listaU;
+
 
 
 //MAIN
 int main() {
   TUsuario usuario;
   int a, conUs;
-  usuarioSoN(a);
+  TListaUsuarios listaU; //array de usuarios en memoria
+  
+  usuarioSoN(a); //modulo de menu para saber si es un usuario registrado o no
+  
 
   if(a == 1){
 
-
+  ususi();//llamada al modulo en caso que este registrado
 
 
 
