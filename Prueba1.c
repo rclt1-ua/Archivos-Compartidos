@@ -22,7 +22,7 @@ typedef struct {
   TCadenaNA apellido;
   char pin[PIN];
   float saldo;
-  string iban[IBAN];
+  char iban[IBAN];
 } TUsuario;
 
 typedef TUsuario TListaUsuarios [USUARIO];
@@ -32,10 +32,11 @@ typedef TUsuario TListaUsuarios [USUARIO];
 //MAIN
 int main() {
   TUsuario usuario;
-  int a, conUs, usua;
+  int a, usua;
   int NUsuarios; //contador de usuarios en memoria
   TListaUsuarios listaU; //array de usuarios en memoria
-  
+
+  listaU=0; //trabajando con o usuarios inicialmente
   usuarioSoN(a); //modulo de menu para saber si es un usuario registrado o no
   
 
@@ -55,8 +56,16 @@ int main() {
 
     
   } else if (a == 2){
-   usuario = crearUsuario();
-    contUs=contUs+1;
+      if(NUsuarios < USUARIO){
+        
+          usuario = crearUsuario();
+          usuario[NUsuarios] = usuario;
+          NUsuarios++; //incrementamos el contador de usuarios de la lista de usuarios
+      }
+      else{
+        printf("NO HAY MAS ESPECIO EN MEMORIA.\n");
+      }
+      
   }
   return 0;
 }
@@ -146,7 +155,7 @@ void retiro(){
 
 
 /////MODULOS USUARIO NO
-int crearUsuario(){
+TUsuario crearUsuario(){
  TUsuario usuario;
   float saldo;
   saldo = 0;
@@ -156,23 +165,28 @@ int crearUsuario(){
   generarPin(usuario.pin);  
   generarIban(usuario.iban);
   usuario.saldo = saldo;
+  //Usuario.fecha = leerfecha(); en el caso que quisieramos registrar la fecha de dado de alta del usuario (se asignan los campos automaticamente) 
+  //inicializamos el array de IBAN a 0
+  for(int i=0; i<12; i++){
+    usuario.iban[i] = 0;
+  }
   return usuario;
 }
 
-void generarNomus(TUsuario *usuario){
+void generarNomus(TUsuario usuario){
   TUsuario.nombre
   TUsuario.apellido
   
   
 }
 
-void pedirNombre(char nombre[]){
-  printf("Introduzca su nombre");
-  scanf("%s", nombre);
+void pedirNombre(TCadena nombre){
+  printf("\t*Introduzca su nombre");
+  scanf("%s", nombre); //con array de char no se coloca & (se modifica directamente en memoria)
 }
 
-void pedirApellido(char apellido[]){
-  printf("Introduzca su apellido");
+void pedirApellido(TCadena apellido){
+  printf("\t*Introduzca su apellido");
   scanf("%s", apellido);
 }
 
@@ -184,7 +198,7 @@ void generarPin(char pin[]) {
     } pin[4] = '\0';
 }
 
-void generarIban(string *iban) {
+void generarIban(char iban[]) {
   int i;
   srand( time ( NULL ) );
   strcpy(iban, "ES");
@@ -194,6 +208,13 @@ void generarIban(string *iban) {
   iban[24] = '\0';
 }
 
-
-
+//por si necesitamos leer una Tfecha
+Tfecha leerFecha(){
+  Tfecha fecha;
+  char c; //caracter para leer la fecha
+  do {
+      scanf("%d %d %d",&fecha.dia, &c,&fecha.mes, &c,&fecha.anyo);
+  }while(fecha.dia< 1 || fecha.dia > 31 || fecha.mes < 1 || fecha.mes > 12);
+  return fecha;
+}
 
