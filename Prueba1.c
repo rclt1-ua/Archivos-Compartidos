@@ -32,15 +32,24 @@ typedef TUsuario TListaUsuarios [USUARIO];
 //MAIN
 int main() {
   TUsuario usuario;
-  int a, conUs;
+  int a, conUs, usua;
+  int NUsuarios; //contador de usuarios en memoria
   TListaUsuarios listaU; //array de usuarios en memoria
   
   usuarioSoN(a); //modulo de menu para saber si es un usuario registrado o no
   
 
   if(a == 1){
-
-  ususi();//llamada al modulo en caso que este registrado
+    switch(usua){
+      case 1:
+        break;
+      case 2:
+        break;
+      case 3:
+        break;
+      case 4:
+        break;
+    }
 
 
 
