@@ -8,18 +8,18 @@
 
 //DEFINICIONES CONSTANTES
 #define NOMUS 8
-#define NOMBRE 15
-#define APELLIDO 15
+#define MAX_NA
 #define PIN 4
 #define IBAN 25
 #define USUARIO 50
 
-
+//Definimos un tipo de dato cadena de caracteres para el nombre y apellidos
+typedef struct TCadenaNA [MAX_NA];
 //ESTRUCTURA PARA USUARIOS
 typedef struct {
   char nomUs[NOMUS];
-  char nombre[NOMBRE];
-  char apellido[APELLIDO];
+  TCadenaNA nombre;
+  TCadenaNA apellido;
   char pin[PIN];
   float saldo;
   string iban[IBAN];
