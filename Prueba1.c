@@ -8,24 +8,41 @@
 
 //DEFINICIONES CONSTANTES
 #define NOMUS 8
-#define MAX_NA
+#define MAX_NOM
 #define PIN 4
 #define IBAN 25
 #define USUARIO 50
 
 //Definimos un tipo de dato cadena de caracteres para el nombre y apellidos
-typedef struct TCadenaNA [MAX_NA];
-//ESTRUCTURA PARA USUARIOS
+typedef struct TCadenaNA [MAX_NOM];
+
 typedef struct {
-  char nomUs[NOMUS];
   TCadenaNA nombre;
   TCadenaNA apellido;
+} TId;
+
+typedef struct {
+  char nomUs[NOMUS];
   char pin[PIN];
+} TDatos;
+
+
+//ESTRUCTURA PARA USUARIOS
+typedef struct {
+  TId nombre;
+  TDatos usuario;
   float saldo;
   char iban[IBAN];
 } TUsuario;
 
+
 typedef TUsuario TListaUsuarios [USUARIO];
+
+
+
+
+
+
 
 
 
@@ -156,15 +173,12 @@ void retiro(){
 
 /////MODULOS USUARIO NO
 TUsuario crearUsuario(){
- TUsuario usuario;
-  float saldo;
-  saldo = 0;
-  pedirNombre(usuario.nombre);
-  pedirApellido(usuario.apellido);
-  //generarNomus();
-  generarPin(usuario.pin);  
-  generarIban(usuario.iban);
-  usuario.saldo = saldo;
+    TUsuario usuario;
+    float saldo = 0;
+    usuario.nombre = pedirID();
+    generarPin(usuario.usuario.pin);
+    generarIban(usuario.iban);
+    usuario.saldo = saldo;
   //Usuario.fecha = leerfecha(); en el caso que quisieramos registrar la fecha de dado de alta del usuario (se asignan los campos automaticamente) 
   //inicializamos el array de IBAN a 0
   for(int i=0; i<12; i++){
@@ -173,21 +187,24 @@ TUsuario crearUsuario(){
   return usuario;
 }
 
+
+
+TId pedirID() {
+    TId persona;
+    printf("\t*Introduzca su nombre: ");
+    scanf("%s", persona.nombre);
+    printf("\t*Introduzca su apellido: ");
+    scanf("%s", persona.apellido);
+    return persona;
+}
+
+
+
 void generarNomus(TUsuario usuario){
   TUsuario.nombre
   TUsuario.apellido
   
   
-}
-
-void pedirNombre(TCadena nombre){
-  printf("\t*Introduzca su nombre");
-  scanf("%s", nombre); //con array de char no se coloca & (se modifica directamente en memoria)
-}
-
-void pedirApellido(TCadena apellido){
-  printf("\t*Introduzca su apellido");
-  scanf("%s", apellido);
 }
 
 void generarPin(char pin[]) {
