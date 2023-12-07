@@ -1,58 +1,47 @@
-//CajeroATM
-// LIBRERIAS
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
-
-//DEFINICIONES CONSTANTES
+// DEFINICIONES CONSTANTES
 #define NOMUS 8
-#define MAX_NOM 20
-#define PIN 4
+#define MAX_NOM 50
+#define PIN_DIGITOS 4
 #define IBAN 25
-#define USUARIO 10
+#define USUARIO 50
 
-//Definimos un tipo de dato cadena de caracteres para el nombre y apellidos
-typedef struct TCadenaNA [MAX_NOM];
+// Definimos un tipo de dato cadena de caracteres para el nombre y apellidos
+typedef char TCadenaNA[MAX_NOM];
 
 typedef struct {
-  TCadenaNA nombre;
-  TCadenaNA apellido;
+    TCadenaNA nombre;
+    TCadenaNA apellido;
 } TId;
 
 typedef struct {
-  char nomUs[NOMUS];
-  char pin[PIN];
+    char nomUs[NOMUS];
+    int pin;
 } TDatos;
 
-
-//ESTRUCTURA PARA USUARIOS
+// ESTRUCTURA PARA USUARIOS
 typedef struct {
-  TId nombre;
-  TDatos usuario;
-  float saldo;
-  char iban[IBAN];
+    TId nombre;
+    TDatos usuario;
+    float saldo;
+    char iban[IBAN];
 } TUsuario;
 
-
-typedef TUsuario TListaUsuarios [USUARIO];
-
-
-
+typedef TUsuario TListaUsuarios[USUARIO];
 
 // PROTOTIPOS DE FUNCIONES
-void usuarioSoN(int *ususn);
-TUsuario crearUsuario();
 TId pedirID();
 int generarNumeroAleatorio();
-void procesarNombres(TId *id, char resultado[]);
-void generarPin(char pin[]);
-void generarIban(char iban[]);
-
-
-
-
+void usuarioSoN(int *ususn);
+void crearUsuario(TListaUsuarios listaU, int *NUsuarios);
+void generarPin(int *pin);
+void generarIban(char iban[], int NUsuarios);
+void imprimirUsuario(TUsuario *usuario);
+void generarNomUs(TId nombre, char nomUs[]);
 
 
 // MAIN
@@ -62,131 +51,82 @@ int main() {
     int NUsuarios = 0; // contador de usuarios en memoria
     TListaUsuarios listaU; // array de usuarios en memoria
 
-    // Inicializar el array de usuarios
-    for (int i = 0; i < USUARIO; i++) {
-        listaU[i].saldo = 0.0;
-    }
-
-    usuarioSoN(&a); // modulo de menu para saber si es un usuario registrado o no
+    listaU[NUsuarios] = usuario; // trabajando con 1 usuario inicialmente
+    usuarioSoN(&a); // modulo de menú para saber si es un usuario registrado o no
 
     if (a == 1) {
-       
-      
-      // ... Lógica para usuarios registrados
+        // Mostrar menú de usuario si ya tiene cuenta
+        printf("Seleccione su operación\n");
+        printf("1. Ingresar dinero\n");
+        printf("2. Retirar dinero\n");
+        printf("3. Estado de cuenta\n");
+        printf("4. Transferir dinero\n");
+        scanf("%d", &usua);
+        switch (usua) {
+            case 1:
+                // Lógica para ingreso de dinero
+                break;
+            case 2:
+                // Lógica para retiro de dinero
+                break;
+            case 3:
+                // Lógica para consultar estado de cuenta
+                break;
+            case 4:
+                // Lógica para transferencia de dinero
+                break;
+            default:
+                printf("Opción no válida\n");
+        }
     } else if (a == 2) {
+        // Crear nuevo usuario
         if (NUsuarios < USUARIO) {
-            listaU[NUsuarios] = crearUsuario();
-            NUsuarios++; // incrementamos el contador de usuarios de la lista de usuarios
+            crearUsuario(listaU, &NUsuarios);
         } else {
-            printf("NO HAY MAS ESPACIO EN MEMORIA.\n");
+            printf("NO HAY MÁS ESPACIO EN MEMORIA.\n");
         }
     }
-
     return 0;
 }
 
+// MODULOS
 
-
-//MODULOS
-//MODULO QUE PREGUNTA AL USUARIO SI TIENE UNA CUENTA O NO
-void usuarioSoN(int *ususn){
-  int ususna;
-  printf("Bienvenido al menu\n");
-  printf("1. Tengo una cuenta\n"); 
-  printf("2. Crear Usuario\n"); 
-  scanf("%d", &ususna);
-  *ususn = ususna;
+// MODULO QUE PREGUNTA AL USUARIO SI TIENE UNA CUENTA O NO
+void usuarioSoN(int *ususn) {
+    int ususna;
+    printf("Bienvenido al menú\n");
+    printf("1. Tengo una cuenta\n");
+    printf("2. Crear Usuario\n");
+    scanf("%d", &ususna);
+    *ususn = ususna;
 }
 
+void crearUsuario(TListaUsuarios listaU, int *NUsuarios) {
+    listaU[*NUsuarios].nombre = pedirID();
+    generarNomUs(listaU[*NUsuarios].nombre, listaU[*NUsuarios].usuario.nomUs);
+    generarPin(&listaU[*NUsuarios].usuario.pin);
+    generarIban(listaU[*NUsuarios].iban, *NUsuarios);
+    listaU[*NUsuarios].saldo = 0.0;
 
-/////MODULOS DE USUARIO SI
-//EN CASO DE QUE TENGA CUENTA, SE LE MUESTRA ESTE MENU AL USUARIO
-void ususi(int *usu){
-  int usua;
-  printf("Seleccione su operacion\n");
-  printf("1. Ingresas dinero\n"); 
-  printf("2. Retirar dinero\n"); 
-  printf("3. Estado de cuenta\n"); 
-  printf("4. Transferencia dinero\n");
-  scanf("%d", &usua);
-  *usu = usua;
+    // Añadir dos números aleatorios al nombre de usuario
+    int numero1 = generarNumeroAleatorio();
+    int numero2 = generarNumeroAleatorio();
+    char numerosAleatorios[5];
+    sprintf(numerosAleatorios, "%d%d", numero1, numero2);
+    strcat(listaU[*NUsuarios].usuario.nomUs, numerosAleatorios);
+
+    printf("Usuario creado exitosamente:\n");
+    imprimirUsuario(&listaU[*NUsuarios]);
+
+    (*NUsuarios)++;
 }
 
-
-
-//MODULO PARA INGRESOS DE DINERO
-void ingr(){
-  float din;
-  char conf;
-  printf("Introduzca la cantidad de dinero que desea ingresar\n");
-  scanf("%d", &din);
-    if( din % 10 == 0 && din > 0){
-      printf("Confirme su operacion s/n\n");
-      scanf("%c", &conf);
-        if(conf == 's'){
-          printf("Se ha ingresado %d en su cuenta\n", din);
-          printf("Gracias por utilizar nuestro servicio\n");       
-        }
-        else{
-          printf("Operacion cancelada\n");
-          printf("Gracias por utilizar nuestro servicio\n");       
-        }       
-    }
-    else {
-      printf("La cantidad introducida debe ser un multiplo de 10 y mayor que 0\n");
-      printf("Operacion fallida\n");
-      printf("Gracias por utilizar nuestro servicio\n");
-    }
+// FUNCION PARA GENERAR UN NUMERO ALEATORIO DE DOS CIFRAS
+int generarNumeroAleatorio() {
+    return rand() % 100;
 }
 
-
-
-//MODULO PARA RETIRO DE DINERO
-void retiro(){
-  int dinre; 
-  char confre;
-  printf("Introduzca la cantidad de dinero que desea retirar\n");
-  scanf("%d", &dinre);
-    if( dinre % 10 == 0 && dinre > 0){
-      printf("Confirme su operacion s/n\n");
-      scanf("%c", &confre);
-        if(confre == 's'){
-          printf("Se ha retirado %d de su cuenta\n", dinre);
-          printf("Gracias por utilizar nuestro servicio\n");       
-        }
-        else{
-          printf("Operacion cancelada\n");
-          printf("Gracias por utilizar nuestro servicio\n");       
-        }
-    }
-    else {
-      printf("La cantidad introducida debe ser un multiplo de 10 y mayor que 0\n");
-      printf("Operacion fallida\n");
-      printf("Gracias por utilizar nuestro servicio\n");
-    }
-}
-
-
-
-
-/////MODULOS USUARIO NO
-TUsuario crearUsuario(){
-    TUsuario usuario;
-    float saldo = 0;
-    usuario.nombre = pedirID();
-    generarPin(usuario.usuario.pin);
-    generarIban(usuario.iban);
-    usuario.saldo = saldo;
-  //Usuario.fecha = leerfecha(); en el caso que quisieramos registrar la fecha de dado de alta del usuario (se asignan los campos automaticamente) 
-  //inicializamos el array de IBAN a 0
-  for(int i=0; i<12; i++){
-    usuario.iban[i] = 0;
-  }
-  return usuario;
-}
-
-
-
+// MODULO PARA PEDIR NOMBRE Y APELLIDO
 TId pedirID() {
     TId persona;
     printf("\t*Introduzca su nombre: ");
@@ -196,47 +136,41 @@ TId pedirID() {
     return persona;
 }
 
-int generarNumeroAleatorio() {
-    return rand() % 100;
+// MODULO PARA IMPRIMIR DATOS DE UN USUARIO
+void imprimirUsuario(TUsuario *usuario) {
+    printf("Nombre: %s %s\n", usuario->nombre.nombre, usuario->nombre.apellido);
+    printf("Nombre de usuario: %s\n", usuario->usuario.nomUs);
+    printf("PIN: %04d\n", usuario->usuario.pin);
+    printf("Saldo: %.2f\n", usuario->saldo);
+    printf("IBAN: %s\n", usuario->iban);
 }
 
-void procesarNomus(TId *id, char resultado[]) {
+// MODULO PARA GENERAR NOMBRE DE USUARIO
+void generarNomUs(TId nombre, char nomUs[]) {
     // Tomar las tres primeras letras del nombre
-    strncpy(resultado, id->nombre, 3);
-    resultado[3] = '\0'; // Añadir el carácter nulo al final
-    // Tomar las tres primeras letras del apellido y concatenarlas al resultado
-    strncat(resultado, id->apellido, 3);
-    // Generar un número aleatorio de dos cifras y agregarlo al resultado
-    char numeroAleatorio[3];
-    sprintf(numeroAleatorio, "%d", generarNumeroAleatorio());
-    strcat(resultado, numeroAleatorio);
+    strncpy(nomUs, nombre.nombre, 3);
+    nomUs[3] = '\0'; // Añadir el carácter nulo al final
+    // Concatenar las tres primeras letras del apellido al nombre de usuario
+    strncat(nomUs, nombre.apellido, 3);
+    nomUs[6] = '\0'; // Añadir el carácter nulo al final
 }
 
-void generarPin(char pin[]) {
-    int i;
+// FUNCIONES AUXILIARES
+
+void generarPin(int *pin) {
     srand(time(NULL));
-    for (i = 0; i < 4; i++) {
-        pin[i] = '0' + rand() % 10;
-    }
-    pin[4] = '\0';
+    *pin = rand() % 10000;
 }
 
-void generarIban(char iban[]) {
-    int i;
+void generarIban(char iban[], int NUsuarios) {
     srand(time(NULL));
     strcpy(iban, "ES");
-    for (i = 4; i < 24; ++i) {
+    char numUsuario[4];  // Suponiendo que el número de usuario es de máximo 3 dígitos
+    sprintf(numUsuario, "%03d", NUsuarios);
+    strcat(iban, numUsuario);
+    for (int i = 5; i < 24; ++i) {
         iban[i] = '0' + rand() % 10;
     }
     iban[24] = '\0';
-}
-
-Tfecha leerFecha() {
-    Tfecha fecha;
-    char c; // caracter para leer la fecha
-    do {
-        scanf("%d %d %d", &fecha.dia, &c, &fecha.mes, &c, &fecha.anyo);
-    } while (fecha.dia < 1 || fecha.dia > 31 || fecha.mes < 1 || fecha.mes > 12);
-    return fecha;
 }
 
