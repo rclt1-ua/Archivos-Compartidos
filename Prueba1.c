@@ -8,10 +8,10 @@
 
 //DEFINICIONES CONSTANTES
 #define NOMUS 8
-#define MAX_NOM
+#define MAX_NOM 20
 #define PIN 4
 #define IBAN 25
-#define USUARIO 50
+#define USUARIO 10
 
 //Definimos un tipo de dato cadena de caracteres para el nombre y apellidos
 typedef struct TCadenaNA [MAX_NOM];
@@ -41,50 +41,48 @@ typedef TUsuario TListaUsuarios [USUARIO];
 
 
 
+// PROTOTIPOS DE FUNCIONES
+void usuarioSoN(int *ususn);
+TUsuario crearUsuario();
+TId pedirID();
+int generarNumeroAleatorio();
+void procesarNombres(TId *id, char resultado[]);
+void generarPin(char pin[]);
+void generarIban(char iban[]);
 
 
 
 
 
-//MAIN
+
+// MAIN
 int main() {
-  TUsuario usuario;
-  int a, usua;
-  int NUsuarios; //contador de usuarios en memoria
-  TListaUsuarios listaU; //array de usuarios en memoria
+    TUsuario usuario;
+    int a, usua;
+    int NUsuarios = 0; // contador de usuarios en memoria
+    TListaUsuarios listaU; // array de usuarios en memoria
 
-  listaU=0; //trabajando con o usuarios inicialmente
-  usuarioSoN(a); //modulo de menu para saber si es un usuario registrado o no
-  
-
-  if(a == 1){
-    switch(usua){
-      case 1:
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      case 4:
-        break;
+    // Inicializar el array de usuarios
+    for (int i = 0; i < USUARIO; i++) {
+        listaU[i].saldo = 0.0;
     }
 
+    usuarioSoN(&a); // modulo de menu para saber si es un usuario registrado o no
 
-
-    
-  } else if (a == 2){
-      if(NUsuarios < USUARIO){
-        
-          usuario = crearUsuario();
-          usuario[NUsuarios] = usuario;
-          NUsuarios++; //incrementamos el contador de usuarios de la lista de usuarios
-      }
-      else{
-        printf("NO HAY MAS ESPECIO EN MEMORIA.\n");
-      }
+    if (a == 1) {
+       
       
-  }
-  return 0;
+      // ... Lógica para usuarios registrados
+    } else if (a == 2) {
+        if (NUsuarios < USUARIO) {
+            listaU[NUsuarios] = crearUsuario();
+            NUsuarios++; // incrementamos el contador de usuarios de la lista de usuarios
+        } else {
+            printf("NO HAY MAS ESPACIO EN MEMORIA.\n");
+        }
+    }
+
+    return 0;
 }
 
 
@@ -198,40 +196,47 @@ TId pedirID() {
     return persona;
 }
 
+int generarNumeroAleatorio() {
+    return rand() % 100;
+}
 
-
-void generarNomus(TUsuario usuario){
-  TUsuario.nombre
-  TUsuario.apellido
-  
-  
+void procesarNomus(TId *id, char resultado[]) {
+    // Tomar las tres primeras letras del nombre
+    strncpy(resultado, id->nombre, 3);
+    resultado[3] = '\0'; // Añadir el carácter nulo al final
+    // Tomar las tres primeras letras del apellido y concatenarlas al resultado
+    strncat(resultado, id->apellido, 3);
+    // Generar un número aleatorio de dos cifras y agregarlo al resultado
+    char numeroAleatorio[3];
+    sprintf(numeroAleatorio, "%d", generarNumeroAleatorio());
+    strcat(resultado, numeroAleatorio);
 }
 
 void generarPin(char pin[]) {
-  int i;
-  srand( time( NULL ) );
+    int i;
+    srand(time(NULL));
     for (i = 0; i < 4; i++) {
-      pin[i] = '0' + rand() % 10;
-    } pin[4] = '\0';
+        pin[i] = '0' + rand() % 10;
+    }
+    pin[4] = '\0';
 }
 
 void generarIban(char iban[]) {
-  int i;
-  srand( time ( NULL ) );
-  strcpy(iban, "ES");
+    int i;
+    srand(time(NULL));
+    strcpy(iban, "ES");
     for (i = 4; i < 24; ++i) {
         iban[i] = '0' + rand() % 10;
-    }  
-  iban[24] = '\0';
+    }
+    iban[24] = '\0';
 }
 
-//por si necesitamos leer una Tfecha
-Tfecha leerFecha(){
-  Tfecha fecha;
-  char c; //caracter para leer la fecha
-  do {
-      scanf("%d %d %d",&fecha.dia, &c,&fecha.mes, &c,&fecha.anyo);
-  }while(fecha.dia< 1 || fecha.dia > 31 || fecha.mes < 1 || fecha.mes > 12);
-  return fecha;
+Tfecha leerFecha() {
+    Tfecha fecha;
+    char c; // caracter para leer la fecha
+    do {
+        scanf("%d %d %d", &fecha.dia, &c, &fecha.mes, &c, &fecha.anyo);
+    } while (fecha.dia < 1 || fecha.dia > 31 || fecha.mes < 1 || fecha.mes > 12);
+    return fecha;
 }
 
