@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 // Definiciones constantes
 #define NOMUS 8
@@ -27,10 +28,10 @@ typedef struct {
     TDatos usuario;
     float saldo;
     char iban[IBAN];
+    char fechaNacimiento[11];  // Cambiar el tamaño según sea necesario
 } TUsuario;
 
 typedef TUsuario TListaUsuarios[USUARIO];
-
 
 // Prototipos de funciones
 TId pedirID();
@@ -41,11 +42,10 @@ void generarPin(int *pin);
 void generarIban(char iban[], int NUsuarios);
 void imprimirUsuario(TUsuario *usuario);
 void generarNomUs(TId nombre, char nomUs[]);
-void Ingreso(TUsuario *usuario);
+void Ingreso(TUsuario *listaU, int NUsuarios);
+void Retiro(TUsuario *usuario, int NUsuarios);
 void consultarUsuario(TListaUsuarios listaU, int NUsuarios);
-
-
-
+int esMenorDeEdad(const char *fechaNacimiento);
 
 // Función principal (main)
 int main() {
@@ -71,10 +71,10 @@ int main() {
 
             switch (usua) {
                 case 1:
-                    Ingreso(&listaU[NUsuarios]);
+                    Ingreso(listaU, NUsuarios);
                     break;
                 case 2:
-                    // Lógica para retiro de dinero
+                    Retiro(listaU, NUsuarios);
                     break;
                 case 3:
                     consultarUsuario(listaU, NUsuarios);
@@ -124,9 +124,32 @@ void usuarioSoN(int *ususn) {
     *ususn = ususna;
 }
 
+
+
+// Módulo para crear un nuevo usuario
 void crearUsuario(TListaUsuarios listaU, int *NUsuarios) {
+    TId fechaNacimiento;
+
     listaU[*NUsuarios].nombre = pedirID();
+    
+    // Pedir fecha de nacimiento
+    printf("\t*Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
+    scanf("%s", listaU[*NUsuarios].fechaNacimiento);
+
+    // Verificar si el usuario es menor de edad
+    if (esMenorDeEdad(listaU[*NUsuarios].fechaNacimiento)) {
+        printf("Lo siento, no puedes crear una cuenta porque eres menor de edad.\n");
+        return;
+    }
+
+    // Continuar con la creación del usuario
     generarNomUs(listaU[*NUsuarios].nombre, listaU[*NUsuarios].usuario.nomUs);
+
+    // Convertir el nombre de usuario a mayúsculas
+    for (int i = 0; i < NOMUS; ++i) {
+        listaU[*NUsuarios].usuario.nomUs[i] = toupper(listaU[*NUsuarios].usuario.nomUs[i]);
+    }
+
     generarPin(&listaU[*NUsuarios].usuario.pin);
     generarIban(listaU[*NUsuarios].iban, *NUsuarios);
     listaU[*NUsuarios].saldo = 0.0;
@@ -136,6 +159,8 @@ void crearUsuario(TListaUsuarios listaU, int *NUsuarios) {
     int numero2 = generarNumeroAleatorio();
     char numerosAleatorios[5];
     sprintf(numerosAleatorios, "%d%d", numero1, numero2);
+    
+    // Concatenar los números aleatorios directamente al nombre de usuario
     strcat(listaU[*NUsuarios].usuario.nomUs, numerosAleatorios);
 
     printf("Usuario creado exitosamente:\n");
@@ -143,6 +168,36 @@ void crearUsuario(TListaUsuarios listaU, int *NUsuarios) {
 
     (*NUsuarios)++;
 }
+
+// Función para verificar si el usuario es menor de edad
+int esMenorDeEdad(const char *fechaNacimiento) {
+    // Obtener la fecha actual
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    // Obtener el día, mes y año actual
+    int diaActual = tm.tm_mday;
+    int mesActual = tm.tm_mon + 1;  // Sumar 1 porque en struct tm, enero es 0
+    int anoActual = tm.tm_year + 1900;  // Sumar 1900 porque struct tm cuenta los años desde 1900
+
+    // Obtener la fecha de nacimiento del usuario
+    int diaNacimiento, mesNacimiento, anoNacimiento;
+    sscanf(fechaNacimiento, "%d/%d/%d", &diaNacimiento, &mesNacimiento, &anoNacimiento);
+
+    // Calcular la diferencia de años
+    int edad = anoActual - anoNacimiento;
+
+    // Verificar si ya cumplió años este año
+    if (mesNacimiento > mesActual || (mesNacimiento == mesActual && diaNacimiento > diaActual)) {
+        edad--;
+    }
+
+    // Verificar si la edad es menor de 18 años
+    return edad < 18;
+}
+
+
+
 
 // FUNCION PARA GENERAR UN NUMERO ALEATORIO DE DOS CIFRAS
 int generarNumeroAleatorio() {
@@ -213,29 +268,97 @@ void generarIban(char iban[], int NUsuarios) {
 }
 
 
-
-void Ingreso(TUsuario *usuario) {
+void Ingreso(TUsuario *listaU, int NUsuarios) {
     int cantidad;
     char confirmacion;
+    char ibanDestino[IBAN];
 
-    printf("Introduzca la cantidad de efectivo que desea ingresar\n");
-    printf("La cantidad debe ser múltiplo de 5\n");
-    scanf("%d", &cantidad);
+    printf("Introduzca el IBAN al que desea ingresar dinero: ");
+    scanf("%s", ibanDestino);
 
-    if (cantidad % 5 == 0) {
-        printf("¿Quiere confirmar su transacción? S/N: ");
-        scanf(" %c", &confirmacion);
+    // Buscar el usuario en la lista
+    int i;
+    for (i = 0; i < NUsuarios; ++i) {
+        if (strcmp(listaU[i].iban, ibanDestino) == 0) {
+            break;
+        }
+    }
 
-        if (confirmacion == 'S' || confirmacion == 's') {
-            usuario->saldo += cantidad;
-            printf("Se han añadido %d euros a su cuenta. Nuevo saldo: %.2f euros\n", cantidad, usuario->saldo);
+    if (i < NUsuarios) {
+        printf("Introduzca la cantidad de efectivo que desea ingresar\n");
+        printf("La cantidad debe ser múltiplo de 5\n");
+        scanf("%d", &cantidad);
+
+        if (cantidad % 5 == 0) {
+            printf("¿Quiere confirmar su transacción? S/N: ");
+            scanf(" %c", &confirmacion);
+
+            if (confirmacion == 'S' || confirmacion == 's') {
+                listaU[i].saldo += cantidad;
+                printf("Se han añadido %d euros al usuario con IBAN %s. Nuevo saldo: %.2f euros\n", cantidad, ibanDestino, listaU[i].saldo);
+            } else {
+                printf("Transacción cancelada\n");
+            }
         } else {
-            printf("Transacción cancelada\n");
+            printf("Transacción cancelada. La cantidad introducida no es múltiplo de 5\n");
         }
     } else {
-        printf("Transacción cancelada. La cantidad introducida no es múltiplo de 5\n");
+        printf("Usuario con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
     }
 }
+
+void Retiro(TUsuario *listaU, int NUsuarios) {
+    int cantidad;
+    char confirmacion;
+    char nomUsuario[NOMUS];
+
+    // Limpiar el búfer de entrada antes de solicitar la información
+    while (getchar() != '\n');
+
+    printf("Introduzca su nombre de usuario: ");
+    scanf("%7s", nomUsuario);
+
+    // Convertir el nombre de usuario a mayúsculas
+    for (int i = 0; i < NOMUS; ++i) {
+        nomUsuario[i] = toupper(nomUsuario[i]);
+    }
+
+    // Buscar el usuario en la lista
+    int i;
+    for (i = 0; i < NUsuarios; ++i) {
+        if (strcmp(listaU[i].usuario.nomUs, nomUsuario) == 0) {
+            printf("Introduzca la cantidad de efectivo que desea retirar\n");
+            printf("La cantidad debe ser múltiplo de 10\n");
+            scanf("%d", &cantidad);
+
+            // Verificar si el saldo es suficiente
+            if (cantidad <= listaU[i].saldo) {
+                if (cantidad % 10 == 0) {
+                    printf("¿Quiere confirmar su transacción? S/N: ");
+                    scanf(" %c", &confirmacion);
+
+                    if (confirmacion == 'S' || confirmacion == 's') {
+                        listaU[i].saldo -= cantidad;
+                        printf("Se han retirado %d euros al usuario. Nuevo saldo: %.2f euros\n", cantidad, listaU[i].saldo);
+                    } else {
+                        printf("Transacción cancelada\n");
+                    }
+                } else {
+                    printf("Transacción cancelada. La cantidad introducida no es múltiplo de 10\n");
+                }
+            } else {
+                printf("Transacción cancelada. Saldo insuficiente\n");
+            }
+            break;  // Romper el bucle después de encontrar al usuario
+        }
+    }
+
+    if (i == NUsuarios) {
+        printf("Usuario no encontrado. Verifique el nombre de usuario e intente nuevamente.\n");
+    }
+}
+
+
 
 
 
@@ -270,4 +393,5 @@ void consultarUsuario(TListaUsuarios listaU, int NUsuarios) {
 
     // Si no se encuentra el usuario, mostrar un mensaje
     printf("Usuario no encontrado. Verifique sus datos e intente nuevamente.\n");
-}
+    }
+
