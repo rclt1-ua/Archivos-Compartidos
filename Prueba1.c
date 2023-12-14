@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 //CONSTANTES------------------------------------------------------------------------
-#define NOMUS_LETRAS 6
+#define NOMUS_LETRAS 15
 #define NOMUS_NUMEROS 3
 #define MAX_NOM 50
 #define PIN_DIGITOS 4
@@ -21,6 +21,7 @@ typedef char TCadenaNA[MAX_NOM];
 typedef struct {
     TCadenaNA nombre;
     TCadenaNA apellido;
+    char identificacion[MAX_NOM];  // Agregado para el número de identificación
 } TId;
 
 typedef struct {
@@ -38,6 +39,7 @@ typedef struct {
     char tipo;
     char fecha[11];
     char hora[9];
+    char minuto[3]; // Nuevo campo para los minutos
 } TTransaccion;
 
 typedef struct {
@@ -59,7 +61,7 @@ int EsMenorDeEdad(const char *fechaNacimiento);
 int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
 void UsuarioSoN(int *ususn);
 void ConsultarUsuario(TListaUsuarios listaU, int NUsuarios);
-void GenerarNomUs(TId nombre, TNombreUsuario *nomUs);
+void GenerarNomUs(TId nombre, TNombreUsuario *nomUs, int idUnico);
 void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
 void GenerarPin(int *pin);
 void GenerarIban(char iban[], int NUsuarios);
@@ -73,69 +75,6 @@ void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios);
 
 
 
-//MODULOS------------------------------------------------------------------------
-//MAIN
-#define MAX_NOM 50
-#define PIN_DIGITOS 4
-#define IBAN 26
-#define MAX_TRANSACCIONES 100
-#define USUARIO 50
-
-//ESTRUCTURAS Y TIPOS DE DATOS------------------------------------------------------------------------
-typedef char TCadenaNA[MAX_NOM];
-
-typedef struct {
-    TCadenaNA nombre;
-    TCadenaNA apellido;
-} TId;
-
-typedef struct {
-    char letras[NOMUS_LETRAS + 1];
-    int numeros;
-} TNombreUsuario;
-
-typedef struct {
-    TNombreUsuario nomUs;
-    int pin;
-} TDatos;
-
-typedef struct {
-    float monto;
-    char tipo;
-    char fecha[11];
-    char hora[9];
-} TTransaccion;
-
-typedef struct {
-    TId nombre;
-    TDatos usuario;
-    float saldo;
-    char iban[IBAN];
-    char fechaNacimiento[11];
-    TTransaccion transacciones[MAX_TRANSACCIONES];
-    int numTransacciones;
-} TUsuario;
-
-typedef TUsuario TListaUsuarios[USUARIO];
-
-//DECLARACION DE MODULOS ------------------------------------------------------------------------
-TId PedirID();
-int GenerarNumeroAleatorio();
-int EsMenorDeEdad(const char *fechaNacimiento);
-int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
-void UsuarioSoN(int *ususn);
-void ConsultarUsuario(TListaUsuarios listaU, int NUsuarios);
-void GenerarNomUs(TId nombre, TNombreUsuario *nomUs);
-void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
-void GenerarPin(int *pin);
-void GenerarIban(char iban[], int NUsuarios);
-void Ingreso(TUsuario *listaU, int NUsuarios);
-void Retiro(TUsuario *listaU, int NUsuarios);
-void Transferencia(TUsuario *listaU, int NUsuarios);
-void ImprimirUsuario(TUsuario *usuario);
-void MostrarHistorialTransacciones(TUsuario *usuario);
-void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios);
-void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios);
 
 
 
@@ -147,20 +86,14 @@ int main() {
     int NUsuarios = 0;
     TListaUsuarios listaU;
 
-    listaU[NUsuarios] = usuario;
-    UsuarioSoN(&a);
-    srand(time(NULL));
-int main() {
-    TUsuario usuario;
-    int a, usua;
-    int NUsuarios = 0;
-    TListaUsuarios listaU;
+    // Inicializar la lista de usuarios
+    for (int i = 0; i < USUARIO; ++i) {
+        listaU[i] = usuario;
+    }
 
-    listaU[NUsuarios] = usuario;
-    UsuarioSoN(&a);
-    srand(time(NULL));
 
-    while (a != 0) {
+    do {
+        UsuarioSoN(&a);
         if (a == 1) {
             // Menú de usuario registrado
             printf("Seleccione su operación\n");
@@ -180,10 +113,10 @@ int main() {
                     Retiro(listaU, NUsuarios);
                     break;
                 case 3:
-                    Transferencia(listaU, NUsuarios);
+                    ConsultarUsuario(listaU, NUsuarios);
                     break;
                 case 4:
-                    ConsultarUsuario(listaU, NUsuarios);
+                    Transferencia(listaU, NUsuarios);
                     break;
                 case 5:
                     MostrarHistorialTransacciones(&listaU[0]);
@@ -194,18 +127,19 @@ int main() {
         } else if (a == 2) {
             // Crear nuevo usuario
             if (NUsuarios < USUARIO) {
-                CrearUsuario(listaU, &NUsuarios);
+                do {
+                    CrearUsuario(listaU, &NUsuarios);
+                    // Agregar una pausa antes de volver a preguntar si el usuario quiere crear otro
+                    printf("\nPresione Enter para crear otro usuario o 0 para salir...");
+                    while (getchar() != '\n'); // Limpiar el buffer de entrada
+                    UsuarioSoN(&a);
+                } while (a == 2);
             } else {
                 printf("NO HAY MÁS ESPACIO EN MEMORIA.\n");
             }
         }
-        // Agregar una pausa antes de volver a mostrar el menú
-        printf("\nPresione Enter para continuar...");
-        while (getchar() != '\n'); // Limpiar el buffer de entrada
 
-        // Volver a preguntar si el usuario tiene cuenta
-        UsuarioSoN(&a);
-    }
+    } while (a != 0);
 
     printf("Gracias por usar nuestros servicios\n");
 
@@ -215,7 +149,6 @@ int main() {
 
 
 // MODULOS------------------------------------------------------------------------
-
 // MODULO DE MENU///////////////////////////////////////
 void UsuarioSoN(int *ususn) {
     int ususna;
@@ -231,34 +164,51 @@ void UsuarioSoN(int *ususn) {
 //MODULO DE CREAR USUARIO
 void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) {
     TId fechaNacimiento;
-    int esMenor;
+    int esMenor, i;
 
-    do {
         listaU[*NUsuarios].nombre = PedirID();
-        // Pedir fecha de nacimiento
-        printf("\t*Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
-        scanf("%s", listaU[*NUsuarios].fechaNacimiento);
-        // Verificar si el usuario es menor de edad
-        esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
-        if (esMenor) {
-            printf("Lo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.\n");
-        }
-    } while (esMenor);
-    // Continuar con la creación del usuario
-    GenerarPin(&listaU[*NUsuarios].usuario.pin);
-    GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
-    listaU[*NUsuarios].saldo = 0.0;
-    // Añadir dos números aleatorios al nombre de usuario
-    int numero1 = GenerarNumeroAleatorio();
-    int numero2 = GenerarNumeroAleatorio();
-    char numerosAleatorios[5];
-    sprintf(numerosAleatorios, "%d%d", numero1, numero2);
-    // Concatenar los números aleatorios directamente al nombre de usuario
-    strcat(listaU[*NUsuarios].usuario.nomUs.letras, numerosAleatorios);
-    printf("Usuario creado exitosamente:\n");
-    ImprimirUsuario(&listaU[*NUsuarios]);
 
-    (*NUsuarios)++;
+        // Verificar si la identificación ya existe en la lista
+        for (i = 0; i < *NUsuarios; ++i) {
+            if (strcmp(listaU[i].nombre.identificacion, listaU[*NUsuarios].nombre.identificacion) == 0) {
+                printf("Ya existe un usuario con esta identificación. Intente nuevamente.\n");
+                break;
+            }
+        }
+
+        // Si no se encuentra una identificación duplicada, continuar con la creación del usuario
+        if (i == *NUsuarios) {
+            // Pedir fecha de nacimiento
+            printf("\t*Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
+            scanf("%s", listaU[*NUsuarios].fechaNacimiento);
+
+            // Verificar si el usuario es menor de edad
+            esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
+            if (esMenor) {
+                printf("Lo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.\n");
+                // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
+            } else {
+                // Continuar con la creación del usuario
+                GenerarPin(&listaU[*NUsuarios].usuario.pin);
+                GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
+                listaU[*NUsuarios].saldo = 0.0;
+
+                // Añadir dos números aleatorios al nombre de usuario
+                int numero1 = GenerarNumeroAleatorio();
+                int numero2 = GenerarNumeroAleatorio();
+                char numerosAleatorios[5];
+                sprintf(numerosAleatorios, "%d%d", numero1, numero2);
+
+                // Concatenar los números aleatorios directamente al nombre de usuario
+                strcat(listaU[*NUsuarios].usuario.nomUs.letras, numerosAleatorios);
+
+                printf("Usuario creado exitosamente:\n");
+                ImprimirUsuario(&listaU[*NUsuarios]);
+
+                (*NUsuarios)++;
+            }
+        }
+    ;
 }
 
 
@@ -270,18 +220,23 @@ TId PedirID() {
     scanf("%s", persona.nombre);
     printf("\t*Introduzca su apellido: ");
     scanf("%s", persona.apellido);
+
+    // Solicitar número de identificación (puede contener letras o números)
+    printf("\t*Introduzca su número de identificación: ");
+    scanf("%s", persona.identificacion);
+
     return persona;
 }
 
 
 
 // MODULO PARA GENERAR NOMBRE DE USUARIO
-void GenerarNomUs(TId nombre, TNombreUsuario *nomUs) {
+void GenerarNomUs(TId nombre, TNombreUsuario *nomUs, int idUnico) {
     // Tomar las seis primeras letras del nombre
     strncpy(nomUs->letras, nombre.nombre, NOMUS_LETRAS);
     nomUs->letras[NOMUS_LETRAS] = '\0'; // Añadir el carácter nulo al final
-    // Generar tres cifras aleatorias para los números
-    nomUs->numeros = rand() % 1000;
+    // Concatenar un número aleatorio y un identificador único
+    nomUs->numeros = rand() % 1000 + idUnico;
 }
 
 
