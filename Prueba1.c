@@ -1,144 +1,155 @@
-//BIBLIOTECAS------------------------------------------------------------------------
+// LIBRERÍAS --------------------------------------------------------------
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <ctype.h>
 #include <stdbool.h>
 
-//CONSTANTES------------------------------------------------------------------------
+// CONSTANTES --------------------------------------------------------------
 #define NOMUS_LETRAS 15
-#define NOMUS_NUMEROS 3
 #define MAX_NOM 50
 #define PIN_DIGITOS 4
 #define IBAN 26
 #define MAX_TRANSACCIONES 100
 #define USUARIO 50
 
-//ESTRUCTURAS Y TIPOS DE DATOS------------------------------------------------------------------------
+// ESTRUCTURAS Y TIPOS DE DATOS ------------------------------------------------
 typedef char TCadenaNA[MAX_NOM];
 
 typedef struct {
     TCadenaNA nombre;
     TCadenaNA apellido;
-    char identificacion[MAX_NOM];  // Agregado para el número de identificación
+    char identificacion[MAX_NOM];
 } TId;
-
-typedef struct {
-    char letras[NOMUS_LETRAS + 1];
-    int numeros;
-} TNombreUsuario;
-
-typedef struct {
-    TNombreUsuario nomUs;
-    int pin;
-} TDatos;
 
 typedef struct {
     float monto;
     char tipo;
     char fecha[11];
     char hora[9];
-    char minuto[3]; // Nuevo campo para los minutos
+    char minuto[9];
 } TTransaccion;
 
 typedef struct {
     TId nombre;
-    TDatos usuario;
     float saldo;
     char iban[IBAN];
     char fechaNacimiento[11];
+    int pin;  // Nuevo campo para almacenar el PIN
     TTransaccion transacciones[MAX_TRANSACCIONES];
     int numTransacciones;
 } TUsuario;
 
 typedef TUsuario TListaUsuarios[USUARIO];
 
-//DECLARACION DE MODULOS ------------------------------------------------------------------------
-TId PedirID();
-int GenerarNumeroAleatorio();
-int EsMenorDeEdad(const char *fechaNacimiento);
-int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
+// MÓDULOS --------------------------------------------------------------
 void UsuarioSoN(int *ususn);
-void ConsultarUsuario(TListaUsuarios listaU, int NUsuarios);
-void GenerarNomUs(TId nombre, TNombreUsuario *nomUs, int idUnico);
-void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
-void GenerarPin(int *pin);
-void GenerarIban(char iban[], int NUsuarios);
-void Ingreso(TUsuario *listaU, int NUsuarios);
-void Retiro(TUsuario *listaU, int NUsuarios);
-void Transferencia(TUsuario *listaU, int NUsuarios);
-void ImprimirUsuario(TUsuario *usuario);
+int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, const char *apellido, int *saldoActualizado);
+void Ingreso(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
+void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
+void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void MostrarHistorialTransacciones(TUsuario *usuario);
 void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios);
 void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios);
+void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
+TId PedirID();
+int EsMenorDeEdad(const char *fechaNacimiento);
+int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
+void ImprimirUsuario(TUsuario *usuario);
+void GenerarPin(int *pin);
+void GenerarIban(char iban[], int NUsuarios);
+void ObtenerFechaHora(TTransaccion *transaccion);
 
 
 
 
-
-
-//MODULOS------------------------------------------------------------------------
-//MAIN
+// MAIN --------------------------------------------------------------
 int main() {
     TUsuario usuario;
     int a, usua;
     int NUsuarios = 0;
     TListaUsuarios listaU;
+    char continuar;
 
     // Inicializar la lista de usuarios
     for (int i = 0; i < USUARIO; ++i) {
         listaU[i] = usuario;
     }
 
-
     do {
         UsuarioSoN(&a);
         if (a == 1) {
-            // Menú de usuario registrado
-            printf("Seleccione su operación\n");
-            printf("1. Ingresar dinero\n");
-            printf("2. Retirar dinero\n");
-            printf("3. Consultar usuario\n");
-            printf("4. Transferir dinero\n");
-            printf("5. Mostrar historial de transacciones\n");
-            printf("Presione 0 para salir\n");
-            scanf("%d", &usua);
+            char nombre[MAX_NOM];
+            char apellido[MAX_NOM];
+            int usuarioEncontradoIndex;
+            int saldoActualizado;
 
-            switch (usua) {
-                case 1:
-                    Ingreso(listaU, NUsuarios);
-                    break;
-                case 2:
-                    Retiro(listaU, NUsuarios);
-                    break;
-                case 3:
-                    ConsultarUsuario(listaU, NUsuarios);
-                    break;
-                case 4:
-                    Transferencia(listaU, NUsuarios);
-                    break;
-                case 5:
-                    MostrarHistorialTransacciones(&listaU[0]);
-                    break;
-                default:
-                    printf("Opción no válida\n");
+            printf("Introduzca su nombre: ");
+            scanf("%49s", nombre);
+            printf("Introduzca su apellido: ");
+            scanf("%49s", apellido);
+
+            usuarioEncontradoIndex = ConsultarUsuario(listaU, NUsuarios, nombre, apellido, &saldoActualizado);
+
+            // Menú de usuario registrado
+            if (usuarioEncontradoIndex != -1) {
+                do {
+                    printf("Seleccione su operación\n");
+                    printf("1. Ingresar dinero\n");
+                    printf("2. Retirar dinero\n");
+                    printf("3. Consultar usuario\n");
+                    printf("4. Transferir dinero\n");
+                    printf("5. Mostrar historial de transacciones\n");
+                    printf("Presione 0 para salir\n");
+
+                    scanf("%d", &usua);
+
+                    switch (usua) {
+                        case 1:
+                            Ingreso(listaU, NUsuarios, usuarioEncontradoIndex);
+                            break;
+                        case 2:
+                            Retiro(listaU, NUsuarios, usuarioEncontradoIndex);
+                            break;
+                        case 3:
+                            ImprimirUsuario(&listaU[usuarioEncontradoIndex]);
+                            break;
+                        case 4:
+                            Transferencia(listaU, NUsuarios, usuarioEncontradoIndex);
+                            break;
+                        case 5:
+                            MostrarHistorialTransacciones(&listaU[usuarioEncontradoIndex]);
+                            break;
+                        default:
+                            printf("Opción no válida\n");
+                    }
+
+                    // Después de cada operación, preguntar si desea realizar otra
+                    printf("¿Desea realizar otra operación? (s/n): ");
+                    scanf(" %c", &continuar);
+
+                    // Limpiar el búfer después de la entrada de caracteres
+                    while (getchar() != '\n');
+
+                } while (continuar == 's' || continuar == 'S');
+            } else {
+                printf("Usuario no encontrado o PIN incorrecto, compruebe la información ingresada\n");
             }
         } else if (a == 2) {
             // Crear nuevo usuario
             if (NUsuarios < USUARIO) {
                 do {
                     CrearUsuario(listaU, &NUsuarios);
-                    // Agregar una pausa antes de volver a preguntar si el usuario quiere crear otro
                     printf("\nPresione Enter para crear otro usuario o 0 para salir...");
-                    while (getchar() != '\n'); // Limpiar el buffer de entrada
+                    while (getchar() != '\n');
+                    printf("\n");
                     UsuarioSoN(&a);
+
                 } while (a == 2);
             } else {
                 printf("NO HAY MÁS ESPACIO EN MEMORIA.\n");
             }
         }
-
     } while (a != 0);
 
     printf("Gracias por usar nuestros servicios\n");
@@ -147,155 +158,69 @@ int main() {
 }
 
 
-
-// MODULOS------------------------------------------------------------------------
-// MODULO DE MENU///////////////////////////////////////
-void UsuarioSoN(int *ususn) {
-    int ususna;
-    printf("Bienvenido al menú\n");
-    printf("1. Tengo una cuenta\n");
-    printf("2. Crear Usuario\n");
-    printf("0. Salir del programa\n");
-    scanf("%d", &ususna);
-    *ususn = ususna;
-}
-
-//MODULOS DE USUARIO NO//////////////////////////////////////////////////
-//MODULO DE CREAR USUARIO
-void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) {
-    TId fechaNacimiento;
-    int esMenor, i;
-
-        listaU[*NUsuarios].nombre = PedirID();
-
-        // Verificar si la identificación ya existe en la lista
-        for (i = 0; i < *NUsuarios; ++i) {
-            if (strcmp(listaU[i].nombre.identificacion, listaU[*NUsuarios].nombre.identificacion) == 0) {
-                printf("Ya existe un usuario con esta identificación. Intente nuevamente.\n");
-                break;
-            }
-        }
-
-        // Si no se encuentra una identificación duplicada, continuar con la creación del usuario
-        if (i == *NUsuarios) {
-            // Pedir fecha de nacimiento
-            printf("\t*Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
-            scanf("%s", listaU[*NUsuarios].fechaNacimiento);
-
-            // Verificar si el usuario es menor de edad
-            esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
-            if (esMenor) {
-                printf("Lo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.\n");
-                // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
-            } else {
-                // Continuar con la creación del usuario
-                GenerarPin(&listaU[*NUsuarios].usuario.pin);
-                GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
-                listaU[*NUsuarios].saldo = 0.0;
-
-                // Añadir dos números aleatorios al nombre de usuario
-                int numero1 = GenerarNumeroAleatorio();
-                int numero2 = GenerarNumeroAleatorio();
-                char numerosAleatorios[5];
-                sprintf(numerosAleatorios, "%d%d", numero1, numero2);
-
-                // Concatenar los números aleatorios directamente al nombre de usuario
-                strcat(listaU[*NUsuarios].usuario.nomUs.letras, numerosAleatorios);
-
-                printf("Usuario creado exitosamente:\n");
-                ImprimirUsuario(&listaU[*NUsuarios]);
-
-                (*NUsuarios)++;
-            }
-        }
-    ;
-}
-
-
-
 // MODULO PARA PEDIR NOMBRE Y APELLIDO
 TId PedirID() {
     TId persona;
-    printf("\t*Introduzca su nombre: ");
+    printf("\n");
+    printf("\t *Introduzca su nombre: ");
     scanf("%s", persona.nombre);
-    printf("\t*Introduzca su apellido: ");
+    printf("\t *Introduzca su apellido: ");
     scanf("%s", persona.apellido);
-
     // Solicitar número de identificación (puede contener letras o números)
-    printf("\t*Introduzca su número de identificación: ");
+    printf("\t *Introduzca su número de identificación: ");
     scanf("%s", persona.identificacion);
 
     return persona;
 }
 
 
-
-// MODULO PARA GENERAR NOMBRE DE USUARIO
-void GenerarNomUs(TId nombre, TNombreUsuario *nomUs, int idUnico) {
-    // Tomar las seis primeras letras del nombre
-    strncpy(nomUs->letras, nombre.nombre, NOMUS_LETRAS);
-    nomUs->letras[NOMUS_LETRAS] = '\0'; // Añadir el carácter nulo al final
-    // Concatenar un número aleatorio y un identificador único
-    nomUs->numeros = rand() % 1000 + idUnico;
+void UsuarioSoN(int *ususn) {
+    int ususna;
+    printf("\t   Bienvenido al menú\n");
+    printf("\n");
+    printf("\t 1. Tengo una cuenta\n");
+    printf("\t 2. Crear Usuario\n");
+    printf("\t 0. Salir del programa\n");
+    printf("\n");
+    printf("Opcion:  ");
+    scanf("%d", &ususna);
+    *ususn = ususna;
 }
+int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, const char *apellido, int *saldoActualizado) {
+    char pinIngresado[PIN_DIGITOS];
+    
+    for (int i = 0; i < NUsuarios; ++i) {
+        if (strcmp(listaU[i].nombre.nombre, nombre) == 0 &&
+            strcmp(listaU[i].nombre.apellido, apellido) == 0) {
+            
+            printf("Introduzca su PIN: ");
+            scanf("%s", pinIngresado);
 
-
-
-// MODULO PARA GENERAR UN PIN ALEATORIO DE 4 DIGITOS
-void GenerarPin(int *pin) {
-    // Genera un PIN de forma aleatoria
-    int digits[4];
-    digits[0] = rand() % 10;
-    digits[1] = rand() % 10;
-    digits[2] = rand() % 10;
-    digits[3] = rand() % 10;
-    // Desordena los dígitos
-    for (int i = 3; i > 0; --i) {
-        int j = rand() % (i + 1);
-        // Intercambia digits[i] y digits[j]
-        int temp = digits[i];
-        digits[i] = digits[j];
-        digits[j] = temp;
-    }
-    // Construye el PIN desordenado
-    *pin = digits[0] * 1000 + digits[1] * 100 + digits[2] * 10 + digits[3];
-}
-
-
-
-//GENERAR EL IBAN DE LA CUENTA
-void GenerarIban(char iban[], int NUsuarios) {
-    strcpy(iban, "ES");
-    char numUsuario[4];  // Suponiendo que el número de usuario es de máximo 3 dígitos
-    sprintf(numUsuario, "%02d", NUsuarios);
-    strcat(iban, numUsuario);
-    for (int i = 4; i < 24; ++i) {
-        iban[i] = '0' + rand() % 10;
-    }
-    iban[24] = '\0';
-}
-
-
-
-//MODULOS DE USUARIO SI//////////////////////////////////////////////////
-// MODULO PARA INGRESO DE DINERO
-void Ingreso(TUsuario *listaU, int NUsuarios) {
-    int cantidad;
-    char confirmacion;
-    char ibanDestino[IBAN];
-
-    printf("Introduzca el IBAN al que desea ingresar dinero: ");
-    scanf("%s", ibanDestino);
-
-    // Buscar el usuario en la lista
-    int i;
-    for (i = 0; i < NUsuarios; ++i) {
-        if (strcmp(listaU[i].iban, ibanDestino) == 0) {
-            break;
+            if (atoi(pinIngresado) == listaU[i].pin) {
+                // Almacena el saldo actualizado
+                *saldoActualizado = listaU[i].saldo;
+                // Devolver el índice del usuario encontrado
+                return i;
+            } else {
+                printf("PIN incorrecto. Intente nuevamente.\n");
+                // Devolver -1 para indicar PIN incorrecto
+                return -1;
+            }
         }
     }
+    // Si no se encuentra el usuario, devolver -1
+    return -1;
+}
 
-    if (i < NUsuarios) {
+
+
+
+// MODULO PARA INGRESO DE DINERO --------------------------------------
+void Ingreso(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
+    int cantidad;
+    char confirmacion;
+
+    if (usuarioEncontradoIndex != -1) {
         printf("Introduzca la cantidad de efectivo que desea ingresar\n");
         printf("La cantidad debe ser múltiplo de 5\n");
         scanf("%d", &cantidad);
@@ -306,16 +231,17 @@ void Ingreso(TUsuario *listaU, int NUsuarios) {
 
             if (confirmacion == 'S' || confirmacion == 's') {
                 // Crear una nueva transacción de ingreso
-                listaU[i].transacciones[listaU[i].numTransacciones].monto = cantidad;
-                listaU[i].transacciones[listaU[i].numTransacciones].tipo = 'I'; // Ingreso
+                listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].monto = cantidad;
+                listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].tipo = 'I'; // Ingreso
                 // Ajustar la fecha y hora según sea necesario
+                ObtenerFechaHora(&(listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones]));
                 // Incrementar el número de transacciones
-                listaU[i].numTransacciones++;
+                listaU[usuarioEncontradoIndex].numTransacciones++;
 
                 // Actualizar el saldo del usuario
-                listaU[i].saldo += cantidad;
+                listaU[usuarioEncontradoIndex].saldo += cantidad;
 
-                printf("Se han añadido %d euros al usuario con IBAN %s. \n\t **Nuevo saldo**: %.2f euros\n", cantidad, ibanDestino, listaU[i].saldo);
+                printf("Se han añadido %d euros a la cuenta del usuario. \n\t **Nuevo saldo**: %.2f euros\n", cantidad, listaU[usuarioEncontradoIndex].saldo);
             } else {
                 printf("Transacción cancelada\n");
             }
@@ -323,73 +249,66 @@ void Ingreso(TUsuario *listaU, int NUsuarios) {
             printf("Transacción cancelada. La cantidad introducida no es múltiplo de 5\n");
         }
     } else {
-        printf("Usuario con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
+        printf("Usuario no encontrado. Verifique los datos del usuario.\n");
     }
 }
 
-
-
-// MODULO PARA RETIRO DE DINERO
-void Retiro(TUsuario *listaU, int NUsuarios) {
+// MODULO PARA RETIRO DE DINERO ---------------------------------------
+void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
     int cantidad;
     char confirmacion;
-    char nomUsuario[NOMUS_LETRAS + 4];  // Se ajusta la longitud para el nombre de usuario
 
-    // Limpiar el búfer de entrada antes de solicitar la información
-    while (getchar() != '\n');
+    if (usuarioEncontradoIndex != -1) {
+        printf("Introduzca la cantidad de efectivo que desea retirar\n");
+        printf("La cantidad debe ser múltiplo de 10\n");
+        scanf("%d", &cantidad);
 
-    printf("Introduzca su nombre de usuario: ");
-    scanf("%s", nomUsuario);
+        // Verificar si el saldo es suficiente
+        if (cantidad <= listaU[usuarioEncontradoIndex].saldo) {
+            if (cantidad % 10 == 0) {
+                printf("¿Quiere confirmar su transacción? S/N: ");
+                scanf(" %c", &confirmacion);
 
-    // Buscar el usuario en la lista
-    int i;
-    for (i = 0; i < NUsuarios; ++i) {
-        if (strcmp(listaU[i].usuario.nomUs.letras, nomUsuario) == 0 &&
-            listaU[i].usuario.nomUs.numeros == atoi(nomUsuario + NOMUS_LETRAS)) {
-            printf("Introduzca la cantidad de efectivo que desea retirar\n");
-            printf("La cantidad debe ser múltiplo de 10\n");
-            scanf("%d", &cantidad);
+                if (confirmacion == 'S' || confirmacion == 's') {
+                    // Crear una nueva transacción de retiro
+                    listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].monto = -cantidad;
+                    listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].tipo = 'R'; // Retiro
+                    // Ajustar la fecha y hora según sea necesario
+                    ObtenerFechaHora(&(listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones]));
+                    // Incrementar el número de transacciones
+                    listaU[usuarioEncontradoIndex].numTransacciones++;
 
-            // Verificar si el saldo es suficiente
-            if (cantidad <= listaU[i].saldo) {
-                if (cantidad % 10 == 0) {
-                    printf("¿Quiere confirmar su transacción? S/N: ");
-                    scanf(" %c", &confirmacion);
+                    // Actualizar el saldo del usuario
+                    listaU[usuarioEncontradoIndex].saldo -= cantidad;
 
-                    if (confirmacion == 'S' || confirmacion == 's') {
-                        // Crear una nueva transacción de retiro
-                        listaU[i].transacciones[listaU[i].numTransacciones].monto = -cantidad;
-                        listaU[i].transacciones[listaU[i].numTransacciones].tipo = 'R'; // Retiro
-                        // Ajustar la fecha y hora según sea necesario
-                        // Incrementar el número de transacciones
-                        listaU[i].numTransacciones++;
-
-                        // Actualizar el saldo del usuario
-                        listaU[i].saldo -= cantidad;
-
-                        printf("Se han retirado %d euros al usuario. Nuevo saldo: %.2f euros\n", cantidad, listaU[i].saldo);
-                    } else {
-                        printf("Transacción cancelada\n");
-                    }
+                    printf("Se han retirado %d euros de la cuenta del usuario. Nuevo saldo: %.2f euros\n", cantidad, listaU[usuarioEncontradoIndex].saldo);
                 } else {
-                    printf("Transacción cancelada. La cantidad introducida no es múltiplo de 10\n");
+                    printf("Transacción cancelada\n");
                 }
             } else {
-                printf("Transacción cancelada. Saldo insuficiente\n");
+                printf("Transacción cancelada. La cantidad introducida no es múltiplo de 10\n");
             }
-            break;  // Romper el bucle después de encontrar al usuario
+        } else {
+            printf("Transacción cancelada. Saldo insuficiente\n");
         }
-    }
-
-    if (i == NUsuarios) {
-        printf("Usuario no encontrado. Verifique el nombre de usuario e intente nuevamente.\n");
+    } else {
+        printf("Usuario no encontrado. Verifique los datos del usuario.\n");
     }
 }
 
+// Función para obtener la fecha, hora y minuto actual
+void ObtenerFechaHora(TTransaccion *transaccion) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    sprintf(transaccion->fecha, "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+    sprintf(transaccion->hora, "%02d", tm.tm_hour);
+    sprintf(transaccion->minuto, "%02d", tm.tm_min);
+}
 
 
-//MODULO TRANSFERENCIA
-void Transferencia(TUsuario *listaU, int NUsuarios) {
+// MODULO DE TRANSFERENCIA ------------------------------------------
+// MODULO DE TRANSFERENCIA ------------------------------------------
+void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
     int cantidad;
     char confirmacion;
     char ibanDestino[IBAN];
@@ -397,94 +316,199 @@ void Transferencia(TUsuario *listaU, int NUsuarios) {
     // Limpiar el búfer de entrada antes de solicitar la información
     while (getchar() != '\n');
 
-    printf("Introduzca su IBAN (origen): ");
+    printf("Introduzca el IBAN al que desea transferir dinero: ");
     scanf("%s", ibanDestino);
 
-    // Buscar el usuario en la lista
-    int indiceOrigen = BuscarUsuarioPorIBAN(listaU, NUsuarios, ibanDestino);
+    // Buscar el usuario destino en la lista
+    int indiceDestino = BuscarUsuarioPorIBAN(listaU, NUsuarios, ibanDestino);
 
-    if (indiceOrigen != -1) {
-        printf("Introduzca el IBAN al que desea transferir dinero: ");
-        scanf("%s", ibanDestino);
+    if (indiceDestino != -1) {
+        if (usuarioEncontradoIndex != indiceDestino) {
+            printf("Introduzca la cantidad de dinero que desea transferir\n");
+            printf("Puede incluir centavos (por ejemplo, 50.75)\n");
+            scanf("%d", &cantidad);
 
-        // Buscar el usuario destino en la lista
-        int indiceDestino = BuscarUsuarioPorIBAN(listaU, NUsuarios, ibanDestino);
+            // Verificar si el saldo es suficiente
+            if (cantidad <= listaU[usuarioEncontradoIndex].saldo) {
+                printf("¿Quiere confirmar su transacción? S/N: ");
+                scanf(" %c", &confirmacion);
 
-        if (indiceDestino != -1) {
-            if (indiceOrigen != indiceDestino) {
-                printf("Introduzca la cantidad de dinero que desea transferir\n");
-                printf("Puede incluir centavos (por ejemplo, 50.75)\n");
-                scanf("%d", &cantidad);
+                if (confirmacion == 'S' || confirmacion == 's') {
+                    // Crear una nueva transacción de transferencia (salida)
+                    listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].monto = -cantidad;
+                    listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones].tipo = 'T'; // Transferencia
+                    // Ajustar la fecha y hora según sea necesario
+                    // Incrementar el número de transacciones
+                    listaU[usuarioEncontradoIndex].numTransacciones++;
 
-                // Verificar si el saldo es suficiente
-                if (cantidad <= listaU[indiceOrigen].saldo) {
-                    printf("¿Quiere confirmar su transacción? S/N: ");
-                    scanf(" %c", &confirmacion);
+                    // Actualizar el saldo del usuario de origen
+                    listaU[usuarioEncontradoIndex].saldo -= cantidad;
 
-                    if (confirmacion == 'S' || confirmacion == 's') {
-                        // Crear una nueva transacción de transferencia (salida)
-                        listaU[indiceOrigen].transacciones[listaU[indiceOrigen].numTransacciones].monto = -cantidad;
-                        listaU[indiceOrigen].transacciones[listaU[indiceOrigen].numTransacciones].tipo = 'T'; // Transferencia
-                        // Ajustar la fecha y hora según sea necesario
-                        // Incrementar el número de transacciones
-                        listaU[indiceOrigen].numTransacciones++;
+                    // Crear una nueva transacción de transferencia (entrada)
+                    listaU[indiceDestino].transacciones[listaU[indiceDestino].numTransacciones].monto = cantidad;
+                    listaU[indiceDestino].transacciones[listaU[indiceDestino].numTransacciones].tipo = 'T'; // Transferencia
+                    // Ajustar la fecha y hora según sea necesario
+                    // Incrementar el número de transacciones
+                    listaU[indiceDestino].numTransacciones++;
 
-                        // Actualizar el saldo del usuario de origen
-                        listaU[indiceOrigen].saldo -= cantidad;
+                    // Actualizar el saldo del usuario de destino
+                    listaU[indiceDestino].saldo += cantidad;
 
-                        // Crear una nueva transacción de transferencia (entrada)
-                        listaU[indiceDestino].transacciones[listaU[indiceDestino].numTransacciones].monto = cantidad;
-                        listaU[indiceDestino].transacciones[listaU[indiceDestino].numTransacciones].tipo = 'T'; // Transferencia
-                        // Ajustar la fecha y hora según sea necesario
-                        // Incrementar el número de transacciones
-                        listaU[indiceDestino].numTransacciones++;
-
-                        // Actualizar el saldo del usuario de destino
-                        listaU[indiceDestino].saldo += cantidad;
-
-                        printf("Se han transferido %d euros de %s a %s.\n", cantidad, listaU[indiceOrigen].nombre.nombre, listaU[indiceDestino].nombre.nombre);
-                    } else {
-                        printf("Transacción cancelada\n");
-                    }
+                    printf("Se han transferido %d euros de %s a %s.\n", cantidad, listaU[usuarioEncontradoIndex].nombre.nombre, listaU[indiceDestino].nombre.nombre);
                 } else {
-                    printf("Transacción cancelada. Saldo insuficiente\n");
+                    printf("Transacción cancelada\n");
                 }
             } else {
-                printf("Transacción cancelada. No puedes transferir dinero a la misma cuenta\n");
+                printf("Transacción cancelada. Saldo insuficiente\n");
             }
         } else {
-            printf("Usuario destino con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
+            printf("Transacción cancelada. No puedes transferir dinero a la misma cuenta\n");
         }
     } else {
-        printf("Usuario origen con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
+        printf("Usuario destino con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
     }
 }
 
 
 
-// MODULO PARA IMPRIMIR DATOS DE UN USUARIO
-void ImprimirUsuario(TUsuario *usuario) {
-    printf("Nombre: %s %s\n", usuario->nombre.nombre, usuario->nombre.apellido);
-    printf("Nombre de usuario: %s\n", usuario->usuario.nomUs.letras);
-    printf("PIN: %04d\n", usuario->usuario.pin);  // Usar %04d para imprimir el PIN con ceros a la izquierda
-    printf("Saldo: %.2f\n", usuario->saldo);
-    printf("IBAN: %s\n", usuario->iban);
-}
 
-
-
-// MODULO PARA MOSTRAR EL HISTORIAL DE TRANSACCIONES
 void MostrarHistorialTransacciones(TUsuario *usuario) {
     printf("Historial de Transacciones:\n");
     for (int i = 0; i < usuario->numTransacciones; ++i) {
-        printf("Transacción %d: %.2f euros\n", i + 1, usuario->transacciones[i].monto);
+        printf("Transacción %d: %.2f euros - Tipo: %c - Fecha: %s - Hora: %s:%s\n",
+               i + 1,
+               usuario->transacciones[i].monto,
+               usuario->transacciones[i].tipo,
+               usuario->transacciones[i].fecha,
+               usuario->transacciones[i].hora,
+               usuario->transacciones[i].minuto);
     }
 }
 
 
 
-//MODULOS DE AUXILIARES/////////////////////////////////////////////////
-//MODULO PARA VERIFICAR MAYORIA DE EDAD
+
+// MODULO PARA GUARDAR USUARIOS EN UN ARCHIVO ---------------------
+void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
+    FILE *archivo;
+    archivo = fopen("DATOSCAJERO.txt", "w");
+
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo para escritura.\n");
+        return;
+    }
+
+    for (int i = 0; i < NUsuarios; ++i) {
+        fprintf(archivo, "%s %.2f %s %s\n",
+                listaU[i].iban,
+                listaU[i].saldo,
+                listaU[i].nombre.nombre,
+                listaU[i].nombre.apellido);
+
+        fprintf(archivo, "%d\n", listaU[i].numTransacciones);
+
+        // Guardar transacciones
+        for (int j = 0; j < listaU[i].numTransacciones; ++j) {
+            fprintf(archivo, "%.2f %c %s %s\n",
+                    listaU[i].transacciones[j].monto,
+                    listaU[i].transacciones[j].tipo,
+                    listaU[i].transacciones[j].fecha,
+                    listaU[i].transacciones[j].hora);
+        }
+
+        fprintf(archivo, "\n");
+    }
+
+    fclose(archivo);
+}
+
+
+
+
+
+// MODULO PARA CARGAR USUARIOS DESDE UN ARCHIVO ---------------------
+void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios) {
+    FILE *archivo;
+    archivo = fopen("DATOSCAJERO.txt", "r");
+
+    if (archivo == NULL) {
+        printf("El archivo DATOSCAJERO.txt no existe. No se cargaron usuarios.\n");
+        return;
+    }
+
+    while (fscanf(archivo, "%s %f %s %s",
+                   listaU[*NUsuarios].iban,
+                   &listaU[*NUsuarios].saldo,
+                   listaU[*NUsuarios].nombre.nombre,
+                   listaU[*NUsuarios].nombre.apellido) == 4) {
+        // Incrementar el número de transacciones
+        int numTransacciones;
+        fscanf(archivo, "%d", &numTransacciones);
+
+        // Cargar transacciones
+        for (int i = 0; i < numTransacciones; ++i) {
+            fscanf(archivo, "%f %c %s %s",
+                   &listaU[*NUsuarios].transacciones[i].monto,
+                   &listaU[*NUsuarios].transacciones[i].tipo,
+                   listaU[*NUsuarios].transacciones[i].fecha,
+                   listaU[*NUsuarios].transacciones[i].hora);
+        }
+
+        // Asignar el número de transacciones cargadas
+        listaU[*NUsuarios].numTransacciones = numTransacciones;
+
+        (*NUsuarios)++;
+    }
+
+    fclose(archivo);
+}
+
+
+
+
+// MODULO DE CREAR USUARIO ----------------------------------------
+void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) {
+    TId fechaNacimiento;
+    int esMenor, i;
+
+    listaU[*NUsuarios].nombre = PedirID();
+
+    // Verificar si la identificación ya existe en la lista
+    for (i = 0; i < *NUsuarios; ++i) {
+        if (strcmp(listaU[i].nombre.identificacion, listaU[*NUsuarios].nombre.identificacion) == 0) {
+            printf("Ya existe un usuario con esta identificación. Intente nuevamente.\n");
+            break;
+        }
+    }
+
+    // Si no se encuentra una identificación duplicada, continuar con la creación del usuario
+    if (i == *NUsuarios) {
+        // Pedir fecha de nacimiento
+        printf("\t *Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
+        scanf("%s", listaU[*NUsuarios].fechaNacimiento);
+        printf("\n");
+        // Verificar si el usuario es menor de edad
+        esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
+        if (esMenor) {
+            printf("Lo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.\n");
+            // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
+        } else {
+            // Continuar con la creación del usuario
+            GenerarPin(&listaU[*NUsuarios].pin);
+            GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
+            listaU[*NUsuarios].saldo = 0.0;
+
+            printf("Usuario creado exitosamente:\n");
+            ImprimirUsuario(&listaU[*NUsuarios]);
+
+            (*NUsuarios)++;
+        }
+    }
+}
+
+
+
+// MODULO PARA VERIFICAR MAYORÍA DE EDAD --------------------------------
 int EsMenorDeEdad(const char *fechaNacimiento) {
     // Obtener la fecha actual
     time_t t = time(NULL);
@@ -517,14 +541,6 @@ int EsMenorDeEdad(const char *fechaNacimiento) {
 
 
 
-// FUNCION PARA GENERAR UN NUMERO ALEATORIO DE DOS CIFRAS
-int GenerarNumeroAleatorio() {
-    return rand() % 100;
-}
-
-
-
-//BUSCAR USUARIO POR IBAN
 int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban) {
     for (int i = 0; i < NUsuarios; ++i) {
         if (strcmp(listaU[i].iban, iban) == 0) {
@@ -535,100 +551,53 @@ int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban)
 }
 
 
-//CONSULTAR USUARIO
-void ConsultarUsuario(TListaUsuarios listaU, int NUsuarios) {
-    char nombre[MAX_NOM];
-    char apellido[MAX_NOM];
-    int pin;
 
-    // Limpiar el búfer de entrada antes de solicitar la información
-    while (getchar() != '\n');
-
-    printf("Introduzca su nombre: ");
-    scanf("%49s", nombre);
-    printf("Introduzca su apellido: ");
-    scanf("%49s", apellido);
-    printf("Introduzca su PIN: ");
-    scanf("%d", &pin);
-
-    // Buscar el usuario en la lista
-    int i;
-    for (i = 0; i < NUsuarios; ++i) {
-        if (strcmp(listaU[i].nombre.nombre, nombre) == 0 &&
-            strcmp(listaU[i].nombre.apellido, apellido) == 0 &&
-            listaU[i].usuario.pin == pin) {
-            // Mostrar la información del usuario
-            printf("Información del usuario:\n");
-            ImprimirUsuario(&listaU[i]);
-            return;
-        }
-    }
-
-    // Si no se encuentra el usuario, mostrar un mensaje
-    printf("Usuario no encontrado. Verifique sus datos e intente nuevamente.\n");
+void ImprimirUsuario(TUsuario *usuario) {
+    printf("Nombre: %s %s\n", usuario->nombre.nombre, usuario->nombre.apellido);
+    printf("Saldo: %.2f\n", usuario->saldo);
+    printf("IBAN: %s\n", usuario->iban);
+    printf("Pin: %d\n", usuario->pin);    
 }
 
-// MODULO PARA GUARDAR USUARIOS EN UN ARCHIVO
-void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
-    FILE *archivo;
-    archivo = fopen("DATOSCAJERO.txt", "w");
 
-    if (archivo == NULL) {
-        printf("Error al abrir el archivo para escritura.\n");
-        return;
+
+
+// MODULO PARA GENERAR UN PIN ALEATORIO DE 4 DIGITOS ----------------------
+void GenerarPin(int *pin) {
+    // Genera un PIN de forma aleatoria
+    int digits[4];
+    digits[0] = rand() % 10;
+    digits[1] = rand() % 10;
+    digits[2] = rand() % 10;
+    digits[3] = rand() % 10;
+    // Desordena los dígitos
+    for (int i = 3; i > 0; --i) {
+        int j = rand() % (i + 1);
+        // Intercambia digits[i] y digits[j]
+        int temp = digits[i];
+        digits[i] = digits[j];
+        digits[j] = temp;
     }
-
-    for (int i = 0; i < NUsuarios; ++i) {
-        fprintf(archivo, "%s %s %d %.2f %s %s %d\n",
-                listaU[i].iban,
-                listaU[i].usuario.nomUs.letras,
-                listaU[i].usuario.nomUs.numeros,
-                listaU[i].saldo,
-                listaU[i].nombre.nombre,
-                listaU[i].nombre.apellido,
-                listaU[i].usuario.pin);
-        fprintf(archivo, "\n");
-    }
-
-    fclose(archivo);
+    // Construye el PIN desordenado
+    *pin = digits[0] * 1000 + digits[1] * 100 + digits[2] * 10 + digits[3];
 }
 
-// MODULO PARA CARGAR USUARIOS DESDE UN ARCHIVO
-void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios) {
-    FILE *archivo;
-    archivo = fopen("DATOSCAJERO.txt", "r");
 
-    if (archivo == NULL) {
-        printf("El archivo DATOSCAJERO.txt no existe. No se cargaron usuarios.\n");
-        return;
+
+
+
+// GENERAR EL IBAN DE LA CUENTA ------------------------------------------
+void GenerarIban(char iban[], int NUsuarios) {
+    strcpy(iban, "ES");
+    char numUsuario[4];  // Suponiendo que el número de usuario es de máximo 3 dígitos
+    sprintf(numUsuario, "%02d", NUsuarios);
+    strcat(iban, numUsuario);
+    for (int i = 4; i < 24; ++i) {
+        iban[i] = '0' + rand() % 10;
     }
-
-    while (fscanf(archivo, "%s %s %d %f %s %s %d",
-                   listaU[*NUsuarios].iban,
-                   listaU[*NUsuarios].usuario.nomUs.letras,
-                   &listaU[*NUsuarios].usuario.nomUs.numeros,
-                   &listaU[*NUsuarios].saldo,
-                   listaU[*NUsuarios].nombre.nombre,
-                   listaU[*NUsuarios].nombre.apellido,
-                   &listaU[*NUsuarios].usuario.pin) == 7) {
-        // Incrementar el número de transacciones
-        int numTransacciones;
-        fscanf(archivo, "%d", &numTransacciones);
-
-        // Cargar transacciones
-        for (int i = 0; i < numTransacciones; ++i) {
-            fscanf(archivo, "%f %c %s %s",
-                   &listaU[*NUsuarios].transacciones[i].monto,
-                   &listaU[*NUsuarios].transacciones[i].tipo,
-                   listaU[*NUsuarios].transacciones[i].fecha,
-                   listaU[*NUsuarios].transacciones[i].hora);
-        }
-
-        // Asignar el número de transacciones cargadas
-        listaU[*NUsuarios].numTransacciones = numTransacciones;
-
-        (*NUsuarios)++;
-    }
-
-    fclose(archivo);
+    iban[24] = '\0';
 }
+
+
+
+
