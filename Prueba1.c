@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdbool.h>
+#include "tigr.h"
 
 // CONSTANTES --------------------------------------------------------------
 #define NOMUS_LETRAS 15
@@ -27,17 +28,28 @@ typedef struct {
     char tipo;
     char fecha[11];
     char hora[9];
-    char minuto[9];
+    char minuto[3];
 } TTransaccion;
+
+typedef struct{
+    int a;
+    int b;
+    int c;
+    int d;
+    int mes;
+    int anyo;
+    int cvc;
+} TTarjeta;
 
 typedef struct {
     TId nombre;
     float saldo;
     char iban[IBAN];
     char fechaNacimiento[11];
-    int pin;  // Nuevo campo para almacenar el PIN
+    int pin;
     TTransaccion transacciones[MAX_TRANSACCIONES];
     int numTransacciones;
+    TTarjeta tarjeta;
 } TUsuario;
 
 typedef TUsuario TListaUsuarios[USUARIO];
@@ -50,18 +62,20 @@ void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void MostrarHistorialTransacciones(TUsuario *usuario);
 void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios);
-void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios);
+void CargarUsuariosDesdeArchivo(TListaUsuarios listaU, int *NUsuarios);
 void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
 TId PedirID();
 int EsMenorDeEdad(const char *fechaNacimiento);
 int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
 void ImprimirUsuario(TUsuario *usuario);
-void GenerarPin(int *pin);
+void GenerarPin(TListaUsuarios listaU, int NUsuarios, int *pin);
 void GenerarIban(char iban[], int NUsuarios);
 void ObtenerFechaHora(TTransaccion *transaccion);
-
-
-
+TTarjeta GenerarTarjeta();
+void GenerarIban(char iban[], int NUsuarios);
+int ExistePinEnLista(TListaUsuarios listaU, int NUsuarios, int pin);
+void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]);
+int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta *tarjeta);
 
 // MAIN --------------------------------------------------------------
 int main() {
@@ -71,10 +85,15 @@ int main() {
     TListaUsuarios listaU;
     char continuar;
 
-    // Inicializar la lista de usuarios
+     
+     
     for (int i = 0; i < USUARIO; ++i) {
         listaU[i] = usuario;
     }
+
+    CargarUsuariosDesdeArchivo(listaU, &NUsuarios);
+
+    printf("%d", NUsuarios);
 
     do {
         UsuarioSoN(&a);
@@ -94,13 +113,15 @@ int main() {
             // Menú de usuario registrado
             if (usuarioEncontradoIndex != -1) {
                 do {
-                    printf("Seleccione su operación\n");
-                    printf("1. Ingresar dinero\n");
-                    printf("2. Retirar dinero\n");
-                    printf("3. Consultar usuario\n");
-                    printf("4. Transferir dinero\n");
-                    printf("5. Mostrar historial de transacciones\n");
-                    printf("Presione 0 para salir\n");
+                    printf("\n\t Seleccione su operación\n");
+                    printf("\n");
+                    printf("\t 1. Ingresar dinero\n");
+                    printf("\t 2. Retirar dinero\n");
+                    printf("\t 3. Consultar usuario\n");
+                    printf("\t 4. Transferir dinero\n");
+                    printf("\t 5. Mostrar historial de transacciones\n");
+                    printf("\t Presione 0 para salir\n");
+                    printf("\n");
 
                     scanf("%d", &usua);
 
@@ -120,17 +141,21 @@ int main() {
                         case 5:
                             MostrarHistorialTransacciones(&listaU[usuarioEncontradoIndex]);
                             break;
+                        case 0:
+                            break;
                         default:
                             printf("Opción no válida\n");
                     }
 
-                    // Después de cada operación, preguntar si desea realizar otra
-                    printf("¿Desea realizar otra operación? (s/n): ");
-                    scanf(" %c", &continuar);
-
-                    // Limpiar el búfer después de la entrada de caracteres
-                    while (getchar() != '\n');
-
+                    if(usua > 0 && usua <=5){
+                        printf("¿Desea realizar otra operación? (s/n): ");
+                        scanf(" %c", &continuar);
+                        GuardarUsuarios(listaU, NUsuarios);
+                        }
+                    else{
+                        while (getchar() != '\n');
+                    };
+                    GuardarUsuarios(listaU, NUsuarios);
                 } while (continuar == 's' || continuar == 'S');
             } else {
                 printf("Usuario no encontrado o PIN incorrecto, compruebe la información ingresada\n");
@@ -138,19 +163,16 @@ int main() {
         } else if (a == 2) {
             // Crear nuevo usuario
             if (NUsuarios < USUARIO) {
-                do {
                     CrearUsuario(listaU, &NUsuarios);
-                    printf("\nPresione Enter para crear otro usuario o 0 para salir...");
-                    while (getchar() != '\n');
                     printf("\n");
-                    UsuarioSoN(&a);
-
-                } while (a == 2);
+                GuardarUsuarios(listaU, NUsuarios);
             } else {
                 printf("NO HAY MÁS ESPACIO EN MEMORIA.\n");
             }
         }
     } while (a != 0);
+
+     GuardarUsuarios(listaU, NUsuarios);
 
     printf("Gracias por usar nuestros servicios\n");
 
@@ -176,7 +198,7 @@ TId PedirID() {
 
 void UsuarioSoN(int *ususn) {
     int ususna;
-    printf("\t   Bienvenido al menú\n");
+    printf("\n\t   Bienvenido al menú\n");
     printf("\n");
     printf("\t 1. Tengo una cuenta\n");
     printf("\t 2. Crear Usuario\n");
@@ -186,6 +208,7 @@ void UsuarioSoN(int *ususn) {
     scanf("%d", &ususna);
     *ususn = ususna;
 }
+
 int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, const char *apellido, int *saldoActualizado) {
     char pinIngresado[PIN_DIGITOS];
     
@@ -309,7 +332,7 @@ void ObtenerFechaHora(TTransaccion *transaccion) {
 // MODULO DE TRANSFERENCIA ------------------------------------------
 // MODULO DE TRANSFERENCIA ------------------------------------------
 void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
-    int cantidad;
+    float cantidad;
     char confirmacion;
     char ibanDestino[IBAN];
 
@@ -325,12 +348,12 @@ void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIn
     if (indiceDestino != -1) {
         if (usuarioEncontradoIndex != indiceDestino) {
             printf("Introduzca la cantidad de dinero que desea transferir\n");
-            printf("Puede incluir centavos (por ejemplo, 50.75)\n");
-            scanf("%d", &cantidad);
+            printf("Puede incluir centavos\n");
+            scanf("%f", &cantidad);
 
             // Verificar si el saldo es suficiente
             if (cantidad <= listaU[usuarioEncontradoIndex].saldo) {
-                printf("¿Quiere confirmar su transacción? S/N: ");
+                printf("¿Quiere confirmar su transacción? S/N: \n");
                 scanf(" %c", &confirmacion);
 
                 if (confirmacion == 'S' || confirmacion == 's') {
@@ -354,9 +377,9 @@ void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIn
                     // Actualizar el saldo del usuario de destino
                     listaU[indiceDestino].saldo += cantidad;
 
-                    printf("Se han transferido %d euros de %s a %s.\n", cantidad, listaU[usuarioEncontradoIndex].nombre.nombre, listaU[indiceDestino].nombre.nombre);
+                    printf("Se han transferido %.2f euros de %s a %s.\n", cantidad, listaU[usuarioEncontradoIndex].nombre.nombre, listaU[indiceDestino].nombre.nombre);
                 } else {
-                    printf("Transacción cancelada\n");
+                    printf("Transacción cancelada, %c\n", confirmacion);
                 }
             } else {
                 printf("Transacción cancelada. Saldo insuficiente\n");
@@ -398,22 +421,34 @@ void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
         return;
     }
 
+    // Guardar el número total de usuarios
+    fprintf(archivo, "%d\n", NUsuarios);
+
     for (int i = 0; i < NUsuarios; ++i) {
-        fprintf(archivo, "%s %.2f %s %s\n",
-                listaU[i].iban,
-                listaU[i].saldo,
-                listaU[i].nombre.nombre,
-                listaU[i].nombre.apellido);
+        fprintf(archivo, "%s %.2f %s %s %d %d %d %d %d %d %d %d \n",
+                   listaU[i].iban,
+                   listaU[i].saldo,
+                   listaU[i].nombre.nombre,
+                   listaU[i].nombre.apellido,
+                   listaU[i].pin,
+                   listaU[i].tarjeta.a,
+                   listaU[i].tarjeta.b,
+                   listaU[i].tarjeta.c,
+                   listaU[i].tarjeta.d,
+                   listaU[i].tarjeta.mes,
+                   listaU[i].tarjeta.anyo,
+                   listaU[i].tarjeta.cvc);
 
         fprintf(archivo, "%d\n", listaU[i].numTransacciones);
 
         // Guardar transacciones
         for (int j = 0; j < listaU[i].numTransacciones; ++j) {
-            fprintf(archivo, "%.2f %c %s %s\n",
+            fprintf(archivo, "%.2f %c %s %s %s\n",
                     listaU[i].transacciones[j].monto,
                     listaU[i].transacciones[j].tipo,
                     listaU[i].transacciones[j].fecha,
-                    listaU[i].transacciones[j].hora);
+                    listaU[i].transacciones[j].hora,
+                    listaU[i].transacciones[j].minuto);
         }
 
         fprintf(archivo, "\n");
@@ -425,9 +460,8 @@ void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
 
 
 
-
 // MODULO PARA CARGAR USUARIOS DESDE UN ARCHIVO ---------------------
-void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios) {
+void CargarUsuariosDesdeArchivo(TListaUsuarios listaU, int *NUsuarios) {
     FILE *archivo;
     archivo = fopen("DATOSCAJERO.txt", "r");
 
@@ -436,32 +470,40 @@ void CargarUsuarios(TListaUsuarios listaU, int *NUsuarios) {
         return;
     }
 
-    while (fscanf(archivo, "%s %f %s %s",
-                   listaU[*NUsuarios].iban,
-                   &listaU[*NUsuarios].saldo,
-                   listaU[*NUsuarios].nombre.nombre,
-                   listaU[*NUsuarios].nombre.apellido) == 4) {
-        // Incrementar el número de transacciones
-        int numTransacciones;
-        fscanf(archivo, "%d", &numTransacciones);
+    // Leer el número total de usuarios
+    fscanf(archivo, "%d", NUsuarios);
 
-        // Cargar transacciones
-        for (int i = 0; i < numTransacciones; ++i) {
-            fscanf(archivo, "%f %c %s %s",
-                   &listaU[*NUsuarios].transacciones[i].monto,
-                   &listaU[*NUsuarios].transacciones[i].tipo,
-                   listaU[*NUsuarios].transacciones[i].fecha,
-                   listaU[*NUsuarios].transacciones[i].hora);
+    for (int i = 0; i < *NUsuarios; ++i) {
+        fscanf(archivo, "%s %f %s %s %d %d %d %d %d %d %d %d",
+               listaU[i].iban,
+               &listaU[i].saldo,
+               listaU[i].nombre.nombre,
+               listaU[i].nombre.apellido,
+               &listaU[i].pin,
+               &listaU[i].tarjeta.a,
+               &listaU[i].tarjeta.b,
+               &listaU[i].tarjeta.c,
+               &listaU[i].tarjeta.d,
+               &listaU[i].tarjeta.mes,
+               &listaU[i].tarjeta.anyo,
+               &listaU[i].tarjeta.cvc);
+
+        fscanf(archivo, "%d", &listaU[i].numTransacciones);
+
+        // Leer transacciones
+        for (int j = 0; j < listaU[i].numTransacciones; ++j) {
+            fscanf(archivo, "%f %c %s %s %s",
+                   &listaU[i].transacciones[j].monto,
+                   &listaU[i].transacciones[j].tipo,
+                   listaU[i].transacciones[j].fecha,
+                   listaU[i].transacciones[j].hora,
+                   listaU[i].transacciones[j].minuto);
         }
-
-        // Asignar el número de transacciones cargadas
-        listaU[*NUsuarios].numTransacciones = numTransacciones;
-
-        (*NUsuarios)++;
     }
 
     fclose(archivo);
 }
+
 
 
 
@@ -494,13 +536,15 @@ void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) {
             // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
         } else {
             // Continuar con la creación del usuario
-            GenerarPin(&listaU[*NUsuarios].pin);
+            GenerarPin(listaU, *NUsuarios, &listaU[*NUsuarios].pin);
             GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
             listaU[*NUsuarios].saldo = 0.0;
 
+            listaU[*NUsuarios].tarjeta = GenerarTarjeta();
+
+
             printf("Usuario creado exitosamente:\n");
             ImprimirUsuario(&listaU[*NUsuarios]);
-
             (*NUsuarios)++;
         }
     }
@@ -557,29 +601,43 @@ void ImprimirUsuario(TUsuario *usuario) {
     printf("Saldo: %.2f\n", usuario->saldo);
     printf("IBAN: %s\n", usuario->iban);
     printf("Pin: %d\n", usuario->pin);    
+    
+    Grafico(usuario->tarjeta.a, usuario->tarjeta.b, usuario->tarjeta.c, usuario->tarjeta.d, usuario->tarjeta.mes, usuario->tarjeta.anyo, usuario->tarjeta.cvc, usuario->nombre.nombre, usuario->nombre.apellido);
 }
 
 
 
 
 // MODULO PARA GENERAR UN PIN ALEATORIO DE 4 DIGITOS ----------------------
-void GenerarPin(int *pin) {
-    // Genera un PIN de forma aleatoria
-    int digits[4];
-    digits[0] = rand() % 10;
-    digits[1] = rand() % 10;
-    digits[2] = rand() % 10;
-    digits[3] = rand() % 10;
-    // Desordena los dígitos
-    for (int i = 3; i > 0; --i) {
-        int j = rand() % (i + 1);
-        // Intercambia digits[i] y digits[j]
-        int temp = digits[i];
-        digits[i] = digits[j];
-        digits[j] = temp;
+void GenerarPin(TListaUsuarios listaU, int NUsuarios, int *pin) {
+    do {
+        // Genera un PIN de forma aleatoria
+        int digits[4];
+        digits[0] = rand() % 10;
+        digits[1] = rand() % 10;
+        digits[2] = rand() % 10;
+        digits[3] = rand() % 10;
+        // Desordena los dígitos
+        for (int i = 3; i > 0; --i) {
+            int j = rand() % (i + 1);
+            // Intercambia digits[i] y digits[j]
+            int temp = digits[i];
+            digits[i] = digits[j];
+            digits[j] = temp;
+        }
+        // Construye el PIN desordenado
+        *pin = digits[0] * 1000 + digits[1] * 100 + digits[2] * 10 + digits[3];
+        // Verifica si el PIN ya existe en la lista de usuarios
+    } while (ExistePinEnLista(listaU, NUsuarios, *pin));
+}
+
+int ExistePinEnLista(TListaUsuarios listaU, int NUsuarios, int pin) {
+    for (int i = 0; i < NUsuarios; ++i) {
+        if (listaU[i].pin == pin) {
+            return 1; // El PIN ya existe en la lista
+        }
     }
-    // Construye el PIN desordenado
-    *pin = digits[0] * 1000 + digits[1] * 100 + digits[2] * 10 + digits[3];
+    return 0; // El PIN no existe en la lista
 }
 
 
@@ -596,6 +654,112 @@ void GenerarIban(char iban[], int NUsuarios) {
         iban[i] = '0' + rand() % 10;
     }
     iban[24] = '\0';
+}
+
+
+TTarjeta GenerarTarjeta() {
+    TTarjeta tarjeta;
+
+    tarjeta.a = (54 * 100) + (rand() % 100);
+    tarjeta.b = rand() % 10000;
+    tarjeta.c = rand() % 10000;
+    tarjeta.d = rand() % 10000;
+    tarjeta.mes = rand() % 11 + 1;
+    tarjeta.anyo = 24 + (rand() % 5 + 5);
+    tarjeta.cvc = rand() % 1000;
+
+    return tarjeta;
+}
+
+
+int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta *tarjeta) {
+    for (int i = 0; i < NUsuarios; ++i) {
+        if (memcmp(&(listaU[i].tarjeta), tarjeta, sizeof(TTarjeta)) == 0) {
+            return i; // Usuario encontrado, devuelve el índice
+        }
+    }
+    return -1; // Usuario no encontrado
+}
+
+
+
+void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]) {
+
+    Tigr* screen = tigrWindow(220, 350, "Menu ATM", 0);
+
+    TPixel c0 = tigrRGB(0, 0, 55);
+    TPixel c1 = tigrRGB(255, 255, 255); // BLANCO
+
+    while (!tigrClosed(screen) && !tigrKeyDown(screen, TK_ESCAPE)) {
+        tigrClear(screen, c0);
+
+        int cx = screen->w / 2; // centro
+        int cy = screen->h / 2; // centro
+
+        // Imprimir el círculo amarillo en la esquina superior derecha
+        tigrCircle(screen, screen->w - 30, 30, 20, tigrRGB(255, 255, 0));
+        tigrCircle(screen, screen->w - 60, 30, 20, tigrRGB(255, 0, 0));
+
+        // Imprimir mensajes pegados con separación
+        char messageYZ[20];
+        sprintf(messageYZ, "%s %s", y, z);
+        int twYZ = tigrTextWidth(tfont, messageYZ);
+        int thYZ = tigrTextHeight(tfont, messageYZ);
+        tigrPrint(screen, tfont, 10, cy - thYZ / 2 + 70, c1, messageYZ);
+
+        char messageA[10];
+        sprintf(messageA, "%04d", a);
+        int twA = tigrTextWidth(tfont, messageA);
+        int thA = tigrTextHeight(tfont, messageA);
+        tigrPrint(screen, tfont, 10, cy - thA / 2 + 100, c1, messageA);
+
+        char messageB[10];
+        sprintf(messageB, "%04d", b);
+        int twB = tigrTextWidth(tfont, messageB);
+        int thB = tigrTextHeight(tfont, messageB);
+        tigrPrint(screen, tfont, 10 + twA + 5, cy - thB / 2 + 100, c1, messageB);
+
+        char messageC[10];
+        sprintf(messageC, "%04d", c);
+        int twC = tigrTextWidth(tfont, messageC);
+        int thC = tigrTextHeight(tfont, messageC);
+        tigrPrint(screen, tfont, 10 + twA + twB + 10, cy - thC / 2 + 100, c1, messageC);
+
+        char messageD[10];
+        sprintf(messageD, "%04d", d);
+        int twD = tigrTextWidth(tfont, messageD);
+        int thD = tigrTextHeight(tfont, messageD);
+        tigrPrint(screen, tfont, 10 + twA + twB + twC + 15, cy - thD / 2 + 100, c1, messageD);
+
+        char messageE[10];
+        sprintf(messageE, "%02d", e);
+        int twE = tigrTextWidth(tfont, messageE);
+        int thE = tigrTextHeight(tfont, messageE);
+        tigrPrint(screen, tfont, 10, cy - thE + 130, c1, messageE);
+
+        char x = '/';
+        char messageX[2];
+        messageX[0] = x;
+        messageX[1] = '\0';
+        int twX = tigrTextWidth(tfont, messageX);
+        int thX = tigrTextHeight(tfont, messageX);
+        tigrPrint(screen, tfont, 10 + twE + 5, cy - thX / 2 + 124, c1, messageX);
+
+        char messageF[10];
+        sprintf(messageF, "%02d", f);
+        int twF = tigrTextWidth(tfont, messageF);
+        int thF = tigrTextHeight(tfont, messageF);
+        tigrPrint(screen, tfont, 10 + twE + 5 + twX + 5, cy - thF + 130, c1, messageF);
+
+        char messageG[10];
+        sprintf(messageG, "%03d", g);
+        int twG = tigrTextWidth(tfont, messageG);
+        int thG = tigrTextHeight(tfont, messageG);
+        tigrPrint(screen, tfont, 10, cy - thG / 2 + 150, c1, messageG);
+
+        tigrUpdate(screen);
+    }
+
 }
 
 
