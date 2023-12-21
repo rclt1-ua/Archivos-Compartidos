@@ -690,7 +690,7 @@ void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]
     TPixel c0 = tigrRGB(0, 0, 55);
     TPixel c1 = tigrRGB(255, 255, 255); // BLANCO
 
-    while (!tigrClosed(screen) && !tigrKeyDown(screen, TK_ESCAPE)) {
+    while (!tigrClosed(screen)) {
         tigrClear(screen, c0);
 
         int cx = screen->w / 2; // centro
@@ -759,7 +759,7 @@ void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]
 
         tigrUpdate(screen);
     }
-
+    tigrFree(screen);  
 }
 
 
