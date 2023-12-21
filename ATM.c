@@ -13,6 +13,15 @@
 #define IBAN 26
 #define MAX_TRANSACCIONES 100
 #define USUARIO 50
+const char *const rojo = "\033[1;31m";
+const char *const azul = "\033[1;34m";
+const char *const amarillo = "\033[1;33m";
+const char *const blanco = "\033[1;37m";
+const char *const naranja = "\033[0;33m";
+const char *const verde = "\033[0;32m";
+const char *const normal = "\033[0m";
+const char *const oculto = "\033[8m";
+
 
 // ESTRUCTURAS Y TIPOS DE DATOS ------------------------------------------------
 typedef char TCadenaNA[MAX_NOM];
@@ -56,15 +65,18 @@ typedef TUsuario TListaUsuarios[USUARIO];
 
 // MÓDULOS --------------------------------------------------------------
 void UsuarioSoN(int *ususn);
+// MODULOS USUARIO SI
 int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, const char *apellido, int *saldoActualizado);
 void Ingreso(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex);
 void MostrarHistorialTransacciones(TUsuario *usuario);
+// MODULOS USUARIO NO
+TId PedirID();
+void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
+//AUXILIARES
 void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios);
 void CargarUsuariosDesdeArchivo(TListaUsuarios listaU, int *NUsuarios);
-void CrearUsuario(TListaUsuarios listaU, int *NUsuarios);
-TId PedirID();
 int EsMenorDeEdad(const char *fechaNacimiento);
 int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban);
 void ImprimirUsuario(TUsuario *usuario);
@@ -77,6 +89,9 @@ int ExistePinEnLista(TListaUsuarios listaU, int NUsuarios, int pin);
 void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]);
 int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta *tarjeta);
 
+
+
+
 // MAIN --------------------------------------------------------------
 int main() {
     TUsuario usuario;
@@ -85,27 +100,28 @@ int main() {
     TListaUsuarios listaU;
     char continuar;
 
+    printf("\033[2J");
      
      
     for (int i = 0; i < USUARIO; ++i) {
         listaU[i] = usuario;
     }
 
-    CargarUsuariosDesdeArchivo(listaU, &NUsuarios);
+    CargarUsuariosDesdeArchivo(listaU, &NUsuarios); //Carga los archivos
 
-    printf("%d", NUsuarios);
 
     do {
-        UsuarioSoN(&a);
+        UsuarioSoN(&a); //Muestra el menu principal
         if (a == 1) {
             char nombre[MAX_NOM];
             char apellido[MAX_NOM];
             int usuarioEncontradoIndex;
             int saldoActualizado;
 
-            printf("Introduzca su nombre: ");
+            printf("\n");
+            printf("\t\t %sIntroduzca su nombre:%s ",naranja, normal);
             scanf("%49s", nombre);
-            printf("Introduzca su apellido: ");
+            printf("\t\t %sIntroduzca su apellido:%s ", naranja, normal);
             scanf("%49s", apellido);
 
             usuarioEncontradoIndex = ConsultarUsuario(listaU, NUsuarios, nombre, apellido, &saldoActualizado);
@@ -113,17 +129,23 @@ int main() {
             // Menú de usuario registrado
             if (usuarioEncontradoIndex != -1) {
                 do {
-                    printf("\n\t Seleccione su operación\n");
+                    printf("\n\t\t\t %sSeleccione su operación%s\n", azul, normal);
                     printf("\n");
-                    printf("\t 1. Ingresar dinero\n");
-                    printf("\t 2. Retirar dinero\n");
-                    printf("\t 3. Consultar usuario\n");
-                    printf("\t 4. Transferir dinero\n");
-                    printf("\t 5. Mostrar historial de transacciones\n");
-                    printf("\t Presione 0 para salir\n");
+                    printf("\t\t 1. Ingresar dinero\n");
                     printf("\n");
-
+                    printf("\t\t 2. Retirar dinero\n");
+                    printf("\n");
+                    printf("\t\t 3. Transferir dinero\n");
+                    printf("\n");
+                    printf("\t\t 4. Consultar usuario\n");
+                    printf("\n");
+                    printf("\t\t 5. Mostrar historial de transacciones\n");
+                    printf("\n");
+                    printf("\t\t Presione 0 para salir\n");
+                    printf("\n");
+                    printf("\t\t%sOpcion:%s ", blanco, normal);
                     scanf("%d", &usua);
+                    printf("\n");
 
                     switch (usua) {
                         case 1:
@@ -133,10 +155,10 @@ int main() {
                             Retiro(listaU, NUsuarios, usuarioEncontradoIndex);
                             break;
                         case 3:
-                            ImprimirUsuario(&listaU[usuarioEncontradoIndex]);
+                            Transferencia(listaU, NUsuarios, usuarioEncontradoIndex);
                             break;
                         case 4:
-                            Transferencia(listaU, NUsuarios, usuarioEncontradoIndex);
+                            ImprimirUsuario(&listaU[usuarioEncontradoIndex]);
                             break;
                         case 5:
                             MostrarHistorialTransacciones(&listaU[usuarioEncontradoIndex]);
@@ -144,11 +166,12 @@ int main() {
                         case 0:
                             break;
                         default:
-                            printf("Opción no válida\n");
+                            printf("\t\t%sOpción no válida%s\n", rojo, normal);
                     }
 
                     if(usua > 0 && usua <=5){
-                        printf("¿Desea realizar otra operación? (s/n): ");
+                        printf("\n");
+                        printf("\n\t\t%s ¿Desea realizar otra operación? (s/n):%s ", blanco, normal);
                         scanf(" %c", &continuar);
                         GuardarUsuarios(listaU, NUsuarios);
                         }
@@ -158,7 +181,7 @@ int main() {
                     GuardarUsuarios(listaU, NUsuarios);
                 } while (continuar == 's' || continuar == 'S');
             } else {
-                printf("Usuario no encontrado o PIN incorrecto, compruebe la información ingresada\n");
+                printf("\t\t%sUsuario no encontrado o PIN incorrecto, compruebe la información ingresada%s\n", rojo, normal);
             }
         } else if (a == 2) {
             // Crear nuevo usuario
@@ -167,48 +190,39 @@ int main() {
                     printf("\n");
                 GuardarUsuarios(listaU, NUsuarios);
             } else {
-                printf("NO HAY MÁS ESPACIO EN MEMORIA.\n");
+                printf("\t\t%sNO HAY MÁS ESPACIO EN MEMORIA.%s\n", rojo, normal);
             }
         }
     } while (a != 0);
 
      GuardarUsuarios(listaU, NUsuarios);
-
-    printf("Gracias por usar nuestros servicios\n");
+    printf("\n");
+    printf("\t\t %sGracias por usar nuestros servicios%s\n", azul, normal);
+    printf("\n");
 
     return 0;
 }
 
 
-// MODULO PARA PEDIR NOMBRE Y APELLIDO
-TId PedirID() {
-    TId persona;
-    printf("\n");
-    printf("\t *Introduzca su nombre: ");
-    scanf("%s", persona.nombre);
-    printf("\t *Introduzca su apellido: ");
-    scanf("%s", persona.apellido);
-    // Solicitar número de identificación (puede contener letras o números)
-    printf("\t *Introduzca su número de identificación: ");
-    scanf("%s", persona.identificacion);
-
-    return persona;
-}
-
-
+// MODULO DEL MENU PRINCIPAL, DIRECCIONA AL USUARIO SEGUN SI ES O NO ES UN USUARIO
 void UsuarioSoN(int *ususn) {
     int ususna;
-    printf("\n\t   Bienvenido al menú\n");
+    printf("\n\t\t\t   %sBienvenido al menú%s\n", azul, normal);
     printf("\n");
-    printf("\t 1. Tengo una cuenta\n");
-    printf("\t 2. Crear Usuario\n");
-    printf("\t 0. Salir del programa\n");
+    printf("\t\t\t 1. Tengo una cuenta\n");
     printf("\n");
-    printf("Opcion:  ");
+    printf("\t\t\t 2. Crear Usuario\n");
+    printf("\n");
+    printf("\t\t\t 0. Salir del programa\n");
+    printf("\n");
+    printf("\t\t%sOpcion:%s  ", blanco, normal);
     scanf("%d", &ususna);
+
     *ususn = ususna;
 }
 
+
+//CONSULTA EL USUARIO EN LA LISTA DE USUARIOS
 int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, const char *apellido, int *saldoActualizado) {
     char pinIngresado[PIN_DIGITOS];
     
@@ -216,16 +230,17 @@ int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, c
         if (strcmp(listaU[i].nombre.nombre, nombre) == 0 &&
             strcmp(listaU[i].nombre.apellido, apellido) == 0) {
             
-            printf("Introduzca su PIN: ");
+            printf("\t\t %sIntroduzca su PIN:%s ", naranja, oculto);
             scanf("%s", pinIngresado);
+            printf("%s", normal);
 
-            if (atoi(pinIngresado) == listaU[i].pin) {
+            if (atoi(pinIngresado) == listaU[i].pin && pinIngresado != 0) {
                 // Almacena el saldo actualizado
                 *saldoActualizado = listaU[i].saldo;
                 // Devolver el índice del usuario encontrado
                 return i;
             } else {
-                printf("PIN incorrecto. Intente nuevamente.\n");
+                printf("\t\t %sPIN incorrecto. Intente nuevamente.%s\n", rojo, normal);
                 // Devolver -1 para indicar PIN incorrecto
                 return -1;
             }
@@ -237,19 +252,18 @@ int ConsultarUsuario(TListaUsuarios listaU, int NUsuarios, const char *nombre, c
 
 
 
-
 // MODULO PARA INGRESO DE DINERO --------------------------------------
 void Ingreso(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
     int cantidad;
     char confirmacion;
 
-    if (usuarioEncontradoIndex != -1) {
-        printf("Introduzca la cantidad de efectivo que desea ingresar\n");
-        printf("La cantidad debe ser múltiplo de 5\n");
+    if (usuarioEncontradoIndex != -1) { //Pregunta si existe el usuario
+        printf("\n\t\t%sIntroduzca la cantidad de efectivo que desea ingresar: ", blanco);
+        printf("\t\tLa cantidad debe ser múltiplo de 5:%s ", normal);
         scanf("%d", &cantidad);
 
-        if (cantidad % 5 == 0) {
-            printf("¿Quiere confirmar su transacción? S/N: ");
+        if (cantidad % 5 == 0) { //El numero debe ser multiplo de 5
+            printf("\t\t %s¿Quiere confirmar su transacción? S/N:%s ", blanco, normal);
             scanf(" %c", &confirmacion);
 
             if (confirmacion == 'S' || confirmacion == 's') {
@@ -264,32 +278,34 @@ void Ingreso(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
                 // Actualizar el saldo del usuario
                 listaU[usuarioEncontradoIndex].saldo += cantidad;
 
-                printf("Se han añadido %d euros a la cuenta del usuario. \n\t **Nuevo saldo**: %.2f euros\n", cantidad, listaU[usuarioEncontradoIndex].saldo);
+                printf("\n\t\t %sSe han añadido %d euros a la cuenta del usuario. **Nuevo saldo**: %.2f euros%s\n", verde, cantidad, listaU[usuarioEncontradoIndex].saldo, normal);
             } else {
-                printf("Transacción cancelada\n");
+                printf("\n\t\t %sTransacción cancelada%s\n", rojo, normal);
             }
         } else {
-            printf("Transacción cancelada. La cantidad introducida no es múltiplo de 5\n");
+            printf("\n\t\t %sTransacción cancelada. La cantidad introducida no es múltiplo de 5%s\n", rojo, normal);
         }
     } else {
-        printf("Usuario no encontrado. Verifique los datos del usuario.\n");
+        printf("\n\t\t %sUsuario no encontrado. Verifique los datos del usuario.%s\n", rojo, normal);
     }
 }
+
+
 
 // MODULO PARA RETIRO DE DINERO ---------------------------------------
 void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
     int cantidad;
     char confirmacion;
 
-    if (usuarioEncontradoIndex != -1) {
-        printf("Introduzca la cantidad de efectivo que desea retirar\n");
-        printf("La cantidad debe ser múltiplo de 10\n");
+    if (usuarioEncontradoIndex != -1) { //Busca si existe el usuario
+        printf("\n\t\t %sIntroduzca la cantidad de efectivo que desea retirar: ", blanco);
+        printf("\t\t La cantidad debe ser múltiplo de 10:%s ", blanco);
         scanf("%d", &cantidad);
 
         // Verificar si el saldo es suficiente
         if (cantidad <= listaU[usuarioEncontradoIndex].saldo) {
             if (cantidad % 10 == 0) {
-                printf("¿Quiere confirmar su transacción? S/N: ");
+                printf("\t\t %s¿Quiere confirmar su transacción? S/N: %s", blanco, normal);
                 scanf(" %c", &confirmacion);
 
                 if (confirmacion == 'S' || confirmacion == 's') {
@@ -300,36 +316,25 @@ void Retiro(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
                     ObtenerFechaHora(&(listaU[usuarioEncontradoIndex].transacciones[listaU[usuarioEncontradoIndex].numTransacciones]));
                     // Incrementar el número de transacciones
                     listaU[usuarioEncontradoIndex].numTransacciones++;
-
                     // Actualizar el saldo del usuario
                     listaU[usuarioEncontradoIndex].saldo -= cantidad;
-
-                    printf("Se han retirado %d euros de la cuenta del usuario. Nuevo saldo: %.2f euros\n", cantidad, listaU[usuarioEncontradoIndex].saldo);
+                    printf("\n\t\t %sSe han retirado %d euros de la cuenta del usuario. Nuevo saldo: %.2f euros%s\n", verde, cantidad, listaU[usuarioEncontradoIndex].saldo, normal);
                 } else {
-                    printf("Transacción cancelada\n");
+                    printf("\n\t\t %sTransacción cancelada%s\n", rojo, normal);
                 }
             } else {
-                printf("Transacción cancelada. La cantidad introducida no es múltiplo de 10\n");
+                printf("\n\t\t %sTransacción cancelada. La cantidad introducida no es múltiplo de 10%s\n", rojo, normal);
             }
         } else {
-            printf("Transacción cancelada. Saldo insuficiente\n");
+            printf("\n\t\t %sTransacción cancelada. Saldo insuficiente%s\n", rojo, normal);
         }
     } else {
-        printf("Usuario no encontrado. Verifique los datos del usuario.\n");
+        printf("\n\t\t %sUsuario no encontrado. Verifique los datos del usuario.%s\n", rojo, normal);
     }
 }
 
-// Función para obtener la fecha, hora y minuto actual
-void ObtenerFechaHora(TTransaccion *transaccion) {
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
-    sprintf(transaccion->fecha, "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
-    sprintf(transaccion->hora, "%02d", tm.tm_hour);
-    sprintf(transaccion->minuto, "%02d", tm.tm_min);
-}
 
 
-// MODULO DE TRANSFERENCIA ------------------------------------------
 // MODULO DE TRANSFERENCIA ------------------------------------------
 void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIndex) {
     float cantidad;
@@ -339,21 +344,21 @@ void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIn
     // Limpiar el búfer de entrada antes de solicitar la información
     while (getchar() != '\n');
 
-    printf("Introduzca el IBAN al que desea transferir dinero: ");
+    printf("\n\t\t %sIntroduzca el IBAN al que desea transferir dinero:%s \n", blanco, normal);
     scanf("%s", ibanDestino);
 
     // Buscar el usuario destino en la lista
     int indiceDestino = BuscarUsuarioPorIBAN(listaU, NUsuarios, ibanDestino);
 
-    if (indiceDestino != -1) {
+    if (indiceDestino != -1) { //Revisa si existe el IBAN
         if (usuarioEncontradoIndex != indiceDestino) {
-            printf("Introduzca la cantidad de dinero que desea transferir\n");
-            printf("Puede incluir centavos\n");
+            printf("\t\t %sIntroduzca la cantidad de dinero que desea transferir\n", blanco);
+            printf("\t\t Puede incluir centavos%s\n", normal);
             scanf("%f", &cantidad);
 
             // Verificar si el saldo es suficiente
             if (cantidad <= listaU[usuarioEncontradoIndex].saldo) {
-                printf("¿Quiere confirmar su transacción? S/N: \n");
+                printf("\t\t %s¿Quiere confirmar su transacción? S/N: %s", blanco, normal);
                 scanf(" %c", &confirmacion);
 
                 if (confirmacion == 'S' || confirmacion == 's') {
@@ -377,27 +382,26 @@ void Transferencia(TListaUsuarios listaU, int NUsuarios, int usuarioEncontradoIn
                     // Actualizar el saldo del usuario de destino
                     listaU[indiceDestino].saldo += cantidad;
 
-                    printf("Se han transferido %.2f euros de %s a %s.\n", cantidad, listaU[usuarioEncontradoIndex].nombre.nombre, listaU[indiceDestino].nombre.nombre);
+                    printf("\n\t\t %sSe han transferido %.2f euros de %s a %s.%s\n", verde, cantidad, listaU[usuarioEncontradoIndex].nombre.nombre, listaU[indiceDestino].nombre.nombre, normal);
                 } else {
-                    printf("Transacción cancelada, %c\n", confirmacion);
+                    printf("\n\t\t %sTransacción cancelada%s\n", rojo, normal);
                 }
             } else {
-                printf("Transacción cancelada. Saldo insuficiente\n");
+                printf("\n\t\t %sTransacción cancelada. Saldo insuficiente%s\n", rojo, normal);
             }
         } else {
-            printf("Transacción cancelada. No puedes transferir dinero a la misma cuenta\n");
+            printf("\n\t\t %sTransacción cancelada. No puedes transferir dinero a la misma cuenta%s\n", rojo, normal);
         }
     } else {
-        printf("Usuario destino con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.\n", ibanDestino);
+        printf("\n\t\t %sUsuario destino con IBAN %s no encontrado. Verifique el IBAN e intente nuevamente.%s\n", rojo, ibanDestino, normal);
     }
 }
 
 
-
-
+//MUESTRA EL HISTORIAL DE TRANSACCIONES QUE HA REALIZADO EL USUARIO
 void MostrarHistorialTransacciones(TUsuario *usuario) {
-    printf("Historial de Transacciones:\n");
-    for (int i = 0; i < usuario->numTransacciones; ++i) {
+    printf("\n\t\t\t %sHistorial de Transacciones:%s\n", azul, normal);
+    for (int i = 0; i < usuario->numTransacciones; ++i) { //Verifica para que usuario se pide el historial
         printf("Transacción %d: %.2f euros - Tipo: %c - Fecha: %s - Hora: %s:%s\n",
                i + 1,
                usuario->transacciones[i].monto,
@@ -409,6 +413,91 @@ void MostrarHistorialTransacciones(TUsuario *usuario) {
 }
 
 
+//IMPRIME LOS DATOS DEL USUARIO E IMPRIME LA TARJETA DEL MISMO HECHA CON LA LIBRERIA TIGR
+void ImprimirUsuario(TUsuario *usuario) {
+    printf("\t\t Nombre: %s %s\n", usuario->nombre.nombre, usuario->nombre.apellido);
+    printf("\t\t Saldo: %.2f\n", usuario->saldo);
+    printf("\t\t IBAN: %s\n", usuario->iban);
+    printf("\t\t Pin: %d\n", usuario->pin);    
+    
+    Grafico(usuario->tarjeta.a, usuario->tarjeta.b, usuario->tarjeta.c, usuario->tarjeta.d, usuario->tarjeta.mes, usuario->tarjeta.anyo, usuario->tarjeta.cvc, usuario->nombre.nombre, usuario->nombre.apellido);
+}
+
+
+
+
+
+//MODULO PARA PEDIRLE AL USUARIO SUS DATOS
+TId PedirID() {
+    TId persona;
+    printf("\n");
+    printf("\t\t %s*Introduzca su nombre (Únicamente el primer nombre):%s ", amarillo, normal);
+    scanf("%s", persona.nombre);
+    printf("\t\t %s*Introduzca su apellido (Únicamente el primer apellido):%s ", amarillo, normal);
+    scanf("%s", persona.apellido);
+    // Solicitar número de identificación (puede contener letras o números)
+    printf("\t\t %s*Introduzca su número de identificación:%s ", amarillo, normal);
+    scanf("%s", persona.identificacion);
+
+    return persona;
+}
+
+
+
+// MODULO DE CREAR USUARIO ----------------------------------------
+void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) { 
+    TId fechaNacimiento;
+    int esMenor, i;
+
+    listaU[*NUsuarios].nombre = PedirID();
+
+    // Verificar si la identificación ya existe en la lista
+    for (i = 0; i < *NUsuarios; ++i) {
+        if (strcmp(listaU[i].nombre.identificacion, listaU[*NUsuarios].nombre.identificacion) == 0) {
+            printf("\n\t\t %sYa existe un usuario con esta identificación. Intente nuevamente.%s\n", rojo, normal);
+            break;
+        }
+    }
+
+    // Si no se encuentra una identificación duplicada, continuar con la creación del usuario
+    if (i == *NUsuarios) {
+        // Pedir fecha de nacimiento
+        printf("\t\t %sIntroduzca su fecha de nacimiento (DD/MM/AAAA):%s ", amarillo, normal);
+        scanf("%s", listaU[*NUsuarios].fechaNacimiento);
+        printf("\n");
+        // Verificar si el usuario es menor de edad
+        esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
+        if (esMenor) {
+            printf("\n\t\t %sLo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.%s\n", rojo, normal);
+            // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
+        } else {
+            // Continuar con la creación del usuario
+            GenerarPin(listaU, *NUsuarios, &listaU[*NUsuarios].pin);
+            GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
+            listaU[*NUsuarios].saldo = 0.0;
+
+            listaU[*NUsuarios].tarjeta = GenerarTarjeta();
+
+            printf("\n\t\t %sUsuario creado exitosamente:%s\n", blanco, normal);
+            ImprimirUsuario(&listaU[*NUsuarios]);
+            (*NUsuarios)++;
+        }
+    }
+}
+
+
+
+
+// Función para obtener la fecha, hora y minuto actual
+void ObtenerFechaHora(TTransaccion *transaccion) {
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    sprintf(transaccion->fecha, "%02d/%02d/%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+    sprintf(transaccion->hora, "%02d", tm.tm_hour);
+    sprintf(transaccion->minuto, "%02d", tm.tm_min);
+}
+
+
 
 
 // MODULO PARA GUARDAR USUARIOS EN UN ARCHIVO ---------------------
@@ -417,7 +506,7 @@ void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
     archivo = fopen("DATOSCAJERO.txt", "w");
 
     if (archivo == NULL) {
-        printf("Error al abrir el archivo para escritura.\n");
+        printf("\n\t\t %sError al abrir el archivo para escritura.%s\n", rojo, normal);
         return;
     }
 
@@ -459,14 +548,13 @@ void GuardarUsuarios(TListaUsuarios listaU, int NUsuarios) {
 
 
 
-
 // MODULO PARA CARGAR USUARIOS DESDE UN ARCHIVO ---------------------
 void CargarUsuariosDesdeArchivo(TListaUsuarios listaU, int *NUsuarios) {
     FILE *archivo;
     archivo = fopen("DATOSCAJERO.txt", "r");
 
     if (archivo == NULL) {
-        printf("El archivo DATOSCAJERO.txt no existe. No se cargaron usuarios.\n");
+        printf("\n\t\t %sEl archivo DATOSCAJERO.txt no existe. No se cargaron usuarios.%s\n", rojo, normal);
         return;
     }
 
@@ -506,52 +594,6 @@ void CargarUsuariosDesdeArchivo(TListaUsuarios listaU, int *NUsuarios) {
 
 
 
-
-
-// MODULO DE CREAR USUARIO ----------------------------------------
-void CrearUsuario(TListaUsuarios listaU, int *NUsuarios) {
-    TId fechaNacimiento;
-    int esMenor, i;
-
-    listaU[*NUsuarios].nombre = PedirID();
-
-    // Verificar si la identificación ya existe en la lista
-    for (i = 0; i < *NUsuarios; ++i) {
-        if (strcmp(listaU[i].nombre.identificacion, listaU[*NUsuarios].nombre.identificacion) == 0) {
-            printf("Ya existe un usuario con esta identificación. Intente nuevamente.\n");
-            break;
-        }
-    }
-
-    // Si no se encuentra una identificación duplicada, continuar con la creación del usuario
-    if (i == *NUsuarios) {
-        // Pedir fecha de nacimiento
-        printf("\t *Introduzca su fecha de nacimiento (DD/MM/AAAA): ");
-        scanf("%s", listaU[*NUsuarios].fechaNacimiento);
-        printf("\n");
-        // Verificar si el usuario es menor de edad
-        esMenor = EsMenorDeEdad(listaU[*NUsuarios].fechaNacimiento);
-        if (esMenor) {
-            printf("Lo siento, no puedes crear una cuenta porque eres menor de edad o la fecha no es válida.\n");
-            // Puedes agregar aquí cualquier código adicional necesario si el usuario es menor
-        } else {
-            // Continuar con la creación del usuario
-            GenerarPin(listaU, *NUsuarios, &listaU[*NUsuarios].pin);
-            GenerarIban(listaU[*NUsuarios].iban, *NUsuarios);
-            listaU[*NUsuarios].saldo = 0.0;
-
-            listaU[*NUsuarios].tarjeta = GenerarTarjeta();
-
-
-            printf("Usuario creado exitosamente:\n");
-            ImprimirUsuario(&listaU[*NUsuarios]);
-            (*NUsuarios)++;
-        }
-    }
-}
-
-
-
 // MODULO PARA VERIFICAR MAYORÍA DE EDAD --------------------------------
 int EsMenorDeEdad(const char *fechaNacimiento) {
     // Obtener la fecha actual
@@ -565,12 +607,12 @@ int EsMenorDeEdad(const char *fechaNacimiento) {
     int diaNacimiento, mesNacimiento, anoNacimiento;
     // Verificar si el usuario proporciona el mes y el año
     if (sscanf(fechaNacimiento, "%d/%d/%d", &diaNacimiento, &mesNacimiento, &anoNacimiento) != 3) {
-        printf("Error: La fecha de nacimiento \"%s\" no es válida. Debe tener el formato DD/MM/AAAA.\n", fechaNacimiento);
+        printf("\n\t\t %sError: La fecha de nacimiento \"%s\" no es válida. Debe tener el formato DD/MM/AAAA.%s\n", rojo, fechaNacimiento, normal);
         return 1;  // Indica que la fecha no es válida
     }
     // Verificar si el mes y el año son 0 o no se proporcionan
     if (diaNacimiento == 0|| diaNacimiento == ' '||mesNacimiento == 0 || mesNacimiento == ' '|| anoNacimiento == 0|| anoNacimiento == ' ') {
-        printf("Error: La fecha de nacimiento \"%s\" no es válida. Mes y año deben ser mayores a 0.\n", fechaNacimiento);
+        printf("\n\t\t %sError: La fecha de nacimiento \"%s\" no es válida. Mes y año deben ser mayores a 0.%s\n", rojo, fechaNacimiento, normal);
         return 1;  // Indica que la fecha no es válida
     }
     // Calcular la diferencia de años
@@ -584,7 +626,7 @@ int EsMenorDeEdad(const char *fechaNacimiento) {
 }
 
 
-
+//BUSCA DENTRO DE LA LISTA DE USUARIOS EL IBAN QUE CORRESPONDA
 int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban) {
     for (int i = 0; i < NUsuarios; ++i) {
         if (strcmp(listaU[i].iban, iban) == 0) {
@@ -592,17 +634,6 @@ int BuscarUsuarioPorIBAN(TListaUsuarios listaU, int NUsuarios, const char *iban)
         }
     }
     return -1; // Usuario no encontrado
-}
-
-
-
-void ImprimirUsuario(TUsuario *usuario) {
-    printf("Nombre: %s %s\n", usuario->nombre.nombre, usuario->nombre.apellido);
-    printf("Saldo: %.2f\n", usuario->saldo);
-    printf("IBAN: %s\n", usuario->iban);
-    printf("Pin: %d\n", usuario->pin);    
-    
-    Grafico(usuario->tarjeta.a, usuario->tarjeta.b, usuario->tarjeta.c, usuario->tarjeta.d, usuario->tarjeta.mes, usuario->tarjeta.anyo, usuario->tarjeta.cvc, usuario->nombre.nombre, usuario->nombre.apellido);
 }
 
 
@@ -631,6 +662,8 @@ void GenerarPin(TListaUsuarios listaU, int NUsuarios, int *pin) {
     } while (ExistePinEnLista(listaU, NUsuarios, *pin));
 }
 
+
+//VERIFICA QUE OTRO USUARIO NO TENGA EL MISMO PIN
 int ExistePinEnLista(TListaUsuarios listaU, int NUsuarios, int pin) {
     for (int i = 0; i < NUsuarios; ++i) {
         if (listaU[i].pin == pin) {
@@ -642,12 +675,10 @@ int ExistePinEnLista(TListaUsuarios listaU, int NUsuarios, int pin) {
 
 
 
-
-
 // GENERAR EL IBAN DE LA CUENTA ------------------------------------------
 void GenerarIban(char iban[], int NUsuarios) {
-    strcpy(iban, "ES");
-    char numUsuario[4];  // Suponiendo que el número de usuario es de máximo 3 dígitos
+    strcpy(iban, "ES"); //Para un IBAN español
+    char numUsuario[4];  
     sprintf(numUsuario, "%02d", NUsuarios);
     strcat(iban, numUsuario);
     for (int i = 4; i < 24; ++i) {
@@ -657,6 +688,7 @@ void GenerarIban(char iban[], int NUsuarios) {
 }
 
 
+//GENERA LA TARJETA DEL USUARIO
 TTarjeta GenerarTarjeta() {
     TTarjeta tarjeta;
 
@@ -672,6 +704,8 @@ TTarjeta GenerarTarjeta() {
 }
 
 
+
+//BUSCA LA TARJETA ASOCIADA AL USUARIO
 int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta *tarjeta) {
     for (int i = 0; i < NUsuarios; ++i) {
         if (memcmp(&(listaU[i].tarjeta), tarjeta, sizeof(TTarjeta)) == 0) {
@@ -682,7 +716,7 @@ int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta
 }
 
 
-
+//LIBRERIA TIGR, MUESTRA LA TARJETA DE DEBITO DEL USUARIO
 void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]) {
 
     Tigr* screen = tigrWindow(220, 350, "Menu ATM", 0);
@@ -690,7 +724,7 @@ void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]
     TPixel c0 = tigrRGB(0, 0, 55);
     TPixel c1 = tigrRGB(255, 255, 255); // BLANCO
 
-    while (!tigrClosed(screen)) {
+    while (!tigrClosed(screen) && !tigrKeyDown(screen, TK_ESCAPE)) {
         tigrClear(screen, c0);
 
         int cx = screen->w / 2; // centro
@@ -759,8 +793,10 @@ void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]
 
         tigrUpdate(screen);
     }
-    tigrFree(screen);  
+
 }
+
+
 
 
 
