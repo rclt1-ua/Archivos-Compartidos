@@ -719,7 +719,7 @@ int BuscarUsuarioPorTarjeta(TListaUsuarios listaU, int NUsuarios, const TTarjeta
 //LIBRERIA TIGR, MUESTRA LA TARJETA DE DEBITO DEL USUARIO
 void Grafico(int a, int b, int c, int d, int e, int f, int g, char y[], char z[]) {
 
-    Tigr* screen = tigrWindow(220, 350, "Menu ATM", 0);
+    Tigr* screen = tigrWindow(220, 350, "Mastercard", 0);
 
     TPixel c0 = tigrRGB(0, 0, 55);
     TPixel c1 = tigrRGB(255, 255, 255); // BLANCO
