@@ -1,0 +1,78 @@
+all: testAC-SNFollowersP4 testAC-InfluencerP4 testAC-AgencyP4 testAC-SNDataP4
+
+CORRDIR=autocorrector-prac4
+
+CXXTESTGEN=$(CORRDIR)/test/cxxtestgen.pl
+CXXTESTSUITEACSNFOLLOWERS=$(CORRDIR)/test/p2TestSuiteAC-SNFollowersP4.h
+CXXTESTSUITEACINFLUENCER=$(CORRDIR)/test/p2TestSuiteAC-InfluencerP4.h
+CXXTESTSUITEACSNDATA=$(CORRDIR)/test/p2TestSuiteAC-SNDataP4.h
+CXXTESTSUITEACAGENCY=$(CORRDIR)/test/p2TestSuiteAC-AgencyP4.h
+
+#NOMBRES EJECUTABLES
+SNFOLLOWERS = p2TestRunnerAC-SNFollowersP4
+INFLUENCER = p2TestRunnerAC-InfluencerP4
+SNDATA = p2TestRunnerAC-SNDataP4
+AGENCY = p2TestRunnerAC-AgencyP4
+
+OPTS=-Wall -g -std=c++11
+OBJS=Agency.o Influencer.o SNFollowers.o SNData.o Util.o
+CC=g++
+
+Agency.o: Agency.cc Agency.h Influencer.h SNFollowers.h Util.h
+	$(CC) $(OPTS) -c Agency.cc
+
+Influencer.o: Influencer.cc Influencer.h SNFollowers.h Util.h
+	$(CC) $(OPTS) -c Influencer.cc
+
+SNData.o: SNData.cc SNData.h
+	$(CC) $(OPTS) -c SNData.cc
+
+SNFollowers.o: SNFollowers.cc SNFollowers.h Util.h
+	$(CC) $(OPTS) -c SNFollowers.cc
+
+Util.o: Util.cc Util.h
+	$(CC) $(OPTS) -c Util.cc
+
+
+#--------------------
+
+testAC-SNFollowersP4: $(OBJS)
+	@echo
+	@echo "Compilando pruebas unitarias de SNFollowers"
+	@rm -f $(CORRDIR)/$(SNFOLLOWERS)
+	@env PERL_BADLANG=0 $(CXXTESTGEN) --error-printer -o $(CORRDIR)/$(SNFOLLOWERS).cc $(CXXTESTSUITEACSNFOLLOWERS)
+	g++ -std=c++11 -g -I. -I$(CORRDIR)/test -o $(SNFOLLOWERS) $(CORRDIR)/$(SNFOLLOWERS).cc $(OBJS)
+	@rm -f $(CORRDIR)/$(SNFOLLOWERS).cc
+	@mv $(SNFOLLOWERS) $(CORRDIR)
+
+testAC-InfluencerP4: $(OBJS)
+	@echo
+	@echo "Compilando pruebas unitarias de Influencer"
+	@rm -f $(CORRDIR)/$(INFLUENCER)
+	@env PERL_BADLANG=0 $(CXXTESTGEN) --error-printer -o $(CORRDIR)/$(INFLUENCER).cc $(CXXTESTSUITEACINFLUENCER)
+	g++ -std=c++11 -g -I. -I$(CORRDIR)/test -o $(INFLUENCER) $(CORRDIR)/$(INFLUENCER).cc $(OBJS)
+	@rm -f $(CORRDIR)/$(INFLUENCER).cc
+	@mv $(INFLUENCER) $(CORRDIR)
+
+testAC-SNDataP4: $(OBJS)
+	@echo
+	@echo "Compilando pruebas unitarias de SNDataP4"
+	@rm -f $(CORRDIR)/$(SNDATA)
+	@env PERL_BADLANG=0 $(CXXTESTGEN) --error-printer -o $(CORRDIR)/$(SNDATA).cc $(CXXTESTSUITEACSNDATA)
+	g++ -std=c++11 -g -I. -I$(CORRDIR)/test -o $(SNDATA) $(CORRDIR)/$(SNDATA).cc $(OBJS)
+	@rm -f $(CORRDIR)/$(SNDATA).cc
+	@mv $(SNDATA) $(CORRDIR)
+
+testAC-AgencyP4: $(OBJS)
+	@echo
+	@echo "Compilando pruebas unitarias de Agency"
+	@rm -f $(CORRDIR)/$(AGENCY)
+	@env PERL_BADLANG=0 $(CXXTESTGEN) --error-printer -o $(CORRDIR)/$(AGENCY).cc $(CXXTESTSUITEACAGENCY)
+	g++ -std=c++11 -g -I. -I$(CORRDIR)/test -o $(AGENCY) $(CORRDIR)/$(AGENCY).cc $(OBJS)
+	@rm -f $(CORRDIR)/$(AGENCY).cc
+	@mv $(AGENCY) $(CORRDIR)
+
+clean:
+	rm -f $(OBJS)
+	rm -f p2TestRunner*
+	rm -f mata

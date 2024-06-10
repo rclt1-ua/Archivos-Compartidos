@@ -1,0 +1,67 @@
+Programación 2 - Autocorrector práctica 3
+=========================================
+
+Para pasar el autocorrector, hay que copiar todos los ficheros de la
+práctica (.cc y .h) en el directorio p4, entrar
+desde el terminal en el directorio autocorrector-prac4 (que debe ser
+un subdirectorio de p4) y ejecutar:
+
+./autocorrectorP2p4.sh
+
+-----------------------------------------------------------
+
+AVISO IMPORTANTE SOBRE LAS PRUEBAS UNITARIAS: hay una prueba unitaria por
+cada clase, en la que se prueban todos los métodos públicos que se indican
+en el enunciado de la práctica.
+
+Si falta algún método del diagrama o no tiene exactamente los mismos
+parámetros, no será posible compilar las pruebas unitarias y por tanto la
+nota de la práctica será 0.
+
+Es posible ejecutar las pruebas unitarias de las clases de la práctica de
+forma incremental: SNData, SNFollowers, Influencer, Agency.  Lo único que se necesita es
+que existan todos los ficheros de la práctica, aunque no tengan nada.  Por
+ejemplo, si has hecho las clases SNData y SNFollowers, sólo tienes que crear
+ficheros vacíos (o con blancos) para Influencer.h, Influencer.cc, Agency.h y
+Agency.cc, y puedes ejecutar el autocorrector para SNData y SNFollowers (fallará al 
+compilar las demás pruebas unitarias, pero ejecutará las pruebas unitarias que pueda)
+
+DIRECTORIOS
+test: Contiene las pruebas unitarias en distintos ficheros .h 
+		Si deseas añadir más pruebas tuyas en estos ficheros puedes hacerlo.
+
+input-files: Contiene los ficheros de texto (.csv) y binarios (.dat) de entrada para 
+				 alguna/s de la/s pruebas unitarias
+salida-obtenida: Contiene las salidas de las ejecuciones y de los ficheros que generan 
+					  algunas pruebas, a partir del código del alumno.
+salida-correcta-esperada: Contiene las salidas y ficheros correctos para compararlos con
+					  los generados por el código del alumno
+					  
+FICHEROS
+Al descomprimir el fichero tgz del autocorrector, encontraremos los siguientes ficheros en
+su directorio (autocorrector-prac4) que NO habrá que eliminar:
+-autocorrectorP2p4.sh: Shell-script que permite compilar los fuentes del alumno, las 
+							  pruebas unitarias y ejecutar cada una de ellas.
+-makefile-autocorrector: Fichero makefile para que make pueda compilar todos los fuentes.
+-comparefile: Ejecutable que permite al autocorrector comparar las salidas obtenidas con
+				  las salidas esperadas.
+-LEEME.txt: Este fichero de texto.
+
+EJECUCIÓN AUTOCORRECTOR
+Tras la ejecución del autocorrector, por cada suite de pruebas unitarias se obtiene un 
+ejecutable en el directorio del autocorrector. Así, si las compilaciones de todas las
+pruebas unitarias han funcionado correctamente, obtendrás en el directorio del 
+autocorrector los siguientes ejecutables:
+
+p2TestRunnerAC-InfluencerP4, p2TestRunnerAC-SNFollowersP4, p2TestRunnerAC-SNDataP4, 
+p2TestRunnerAC-AgencyP4
+
+Si un suite de pruebas unitarias da error, puedes obtener más información adicional
+si lo ejecutas directamente.  Por ejemplo, si diese error en p2TestRunnerAC-AgencyP4,
+podrías ejecutarlo directamente: 
+
+    autocorrector-prac4$./p2TestRunnerAC-AgencyP4
+
+donde en algunos casos te aportará algo más de información.
+
+
